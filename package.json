@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "vercel-build": "npm install --no-optional && next build"
+    "vercel-build": "next build"
   },
   "keywords": [
     "hospital",
