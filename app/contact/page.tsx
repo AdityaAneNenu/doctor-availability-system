@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Activity, Mail, Phone, MapPin, Send, X, User, Heart } from 'lucide-react'
+import { Mail, Phone, MapPin, Send, X, User, Heart } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
 import { useAuth } from '@/lib/useAuthFixed'
 

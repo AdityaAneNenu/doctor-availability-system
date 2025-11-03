@@ -9,7 +9,7 @@ import { Heart, User, TrendingUp, Calendar, Activity, Brain, BarChart3, Database
 import ThemeToggle from '@/components/ThemeToggle';
 import { getAdmissionModel, type TrainingDataPoint, type AdmissionPrediction } from '@/lib/admissionMLModel';
 import EmptyState from '@/components/EmptyState';
-import { SkeletonTable, SkeletonStat, SkeletonCard } from '@/components/Skeleton';
+import { SkeletonTable, SkeletonStat } from '@/components/Skeleton';
 import PageTransition from '@/components/PageTransition';
 
 export default function AdmissionPredictionPage() {
@@ -617,7 +617,7 @@ export default function AdmissionPredictionPage() {
                     <div>
                       <p className="font-semibold text-base mb-1">Excellent! Ready to train!</p>
                       <p className="text-sm opacity-90">
-                        You have collected enough data. Head to the <strong>"Train Model"</strong> tab to start training your ML model.
+                        You have collected enough data. Head to the <strong>&quot;Train Model&quot;</strong> tab to start training your ML model.
                       </p>
                     </div>
                   </div>
