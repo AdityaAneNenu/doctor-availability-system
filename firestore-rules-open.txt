@@ -1,0 +1,66 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function to check if user is hospital admin
+    function isHospitalAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'hospital_admin';
+    }
+    
+    // Profiles collection
+    match /profiles/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false;
+    }
+    
+    // Hospitals collection
+    match /hospitals/{hospitalId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+                      request.resource.data.admin_id == request.auth.uid;
+      allow update: if isAuthenticated() && 
+                      resource.data.admin_id == request.auth.uid;
+      allow delete: if isAuthenticated() && 
+                      resource.data.admin_id == request.auth.uid;
+    }
+    
+    // Availability collection
+    match /availability/{availabilityId} {
+      allow read: if isAuthenticated();
+      allow write: if isHospitalAdmin();
+    }
+    
+    // Weather data collection
+    match /weather_data/{weatherId} {
+      allow read: if isAuthenticated();
+      allow write: if true;
+    }
+    
+    // Doctor requirements collection
+    match /doctor_requirements/{requirementId} {
+      allow read: if isAuthenticated();
+      allow write: if true;
+    }
+    
+    // Admission data collection (for ML prediction)
+    // Allow open access for demo purposes - in production use Firebase Admin SDK
+    match /admission_data/{dataId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

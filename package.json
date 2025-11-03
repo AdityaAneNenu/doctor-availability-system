@@ -18,8 +18,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.56.0",
     "@tailwindcss/postcss": "^4.1.12",
+    "@tensorflow/tfjs": "^4.22.0",
+    "brain.js": "^2.0.0-beta.24",
+    "firebase": "^11.0.1",
     "lucide-react": "^0.542.0",
     "next": "^15.5.2",
     "react": "^19.1.1",

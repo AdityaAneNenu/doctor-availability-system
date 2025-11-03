@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Heart, Activity, Users, MapPin, ArrowRight, Building2, Phone, Mail, Shield, User, X } from 'lucide-react'
+import { Heart, Activity, Users, MapPin, ArrowRight, Building2, User, TrendingUp } from 'lucide-react'
 import { useAuth } from '@/lib/useAuthFixed'
 import ThemeToggle from '@/components/ThemeToggle'
 import { useState } from 'react'
@@ -31,56 +31,72 @@ export default function Home() {
     )
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       {/* Header */}
-      <header className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50">
+      <header className="fixed top-0 left-0 right-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-3">
-              <Heart className="h-8 w-8 text-red-500" />
-              <Link href="/" className="hover:opacity-80 transition-opacity">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  Smart Med Tracker
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-2.5">
+              <div className="relative">
+                <Heart className="h-7 w-7 text-rose-500 fill-rose-500" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+              </div>
+              <Link href="/" className="group">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+                  Smart<span className="text-rose-500">Med</span>
                 </h1>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 -mt-0.5">Health Intelligence</p>
               </Link>
             </div>
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/dashboard" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">Dashboard</Link>
-              <Link href="/about" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">About</Link>
-              <Link href="/contact" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">Contact</Link>
+            <nav className="hidden md:flex items-center space-x-1">
+              <Link href="/dashboard" className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+                Dashboard
+              </Link>
+              <Link href="/admission" className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+                Admission AI
+              </Link>
+              <Link href="/about" className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+                About
+              </Link>
+              <Link href="/contact" className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+                Contact
+              </Link>
               
-              {/* Theme Toggle */}
+              <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-2"></div>
+              
               <ThemeToggle />
               
               {isAuthenticated ? (
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2 ml-2">
                   <Link
                     href="/profile"
-                    className="relative flex items-center justify-center w-10 h-10 bg-gray-100 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors group"
-                    title="View Profile"
+                    className="relative w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 p-0.5 hover:scale-105 transition-transform"
+                    title="Profile"
                   >
-                    {profile?.avatar_url ? (
-                      <Image 
-                        src={profile.avatar_url} 
-                        alt="Profile" 
-                        width={32}
-                        height={32}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <User className="h-5 w-5 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-                    )}
+                    <div className="w-full h-full rounded-full bg-white dark:bg-gray-900 flex items-center justify-center">
+                      {profile?.avatar_url ? (
+                        <Image 
+                          src={profile.avatar_url} 
+                          alt="Profile" 
+                          width={32}
+                          height={32}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                      )}
+                    </div>
                   </Link>
                   <button 
                     onClick={handleSignOut}
-                    className="bg-gradient-to-r from-red-500 to-red-600 dark:from-red-600 dark:to-red-700 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 dark:hover:from-red-700 dark:hover:to-red-800 transition-all duration-200 shadow-md hover:shadow-lg font-medium ml-2"
+                    className="px-4 py-2 text-sm font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-all"
                   >
                     Sign Out
                   </button>
                 </div>
               ) : (
-                <Link href="/auth" className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-600 dark:hover:to-indigo-600 transition-all duration-200 shadow-lg hover:shadow-xl font-medium ml-2">
-                  Sign In
+                <Link href="/auth" className="ml-2 px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-sm hover:shadow-md transition-all">
+                  Get Started
                 </Link>
               )}
             </nav>
@@ -89,10 +105,10 @@ export default function Home() {
             <div className="md:hidden flex items-center space-x-2">
               <ThemeToggle />
               <button 
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
@@ -102,190 +118,164 @@ export default function Home() {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden">
-            <div className="fixed inset-0 z-50 lg:hidden">
-              <div className="fixed inset-0 bg-black bg-opacity-25" onClick={() => setIsMobileMenuOpen(false)}></div>
-              <div className="relative flex w-full max-w-xs flex-col bg-white dark:bg-gray-900 pb-12 shadow-xl">
-                <div className="flex px-4 pb-2 pt-5">
-                  <button
-                    type="button"
-                    className="-m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:text-gray-500"
+          <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+            <div className="px-4 py-3 space-y-1">
+              <Link 
+                href="/dashboard" 
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <Link 
+                href="/admission" 
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Admission AI
+              </Link>
+              <Link 
+                href="/about" 
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                About
+              </Link>
+              <Link 
+                href="/contact" 
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link 
+                    href="/profile" 
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <X className="h-6 w-6" />
+                    Profile
+                  </Link>
+                  <button 
+                    onClick={() => {
+                      handleSignOut();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left text-sm font-medium text-rose-600 dark:text-rose-400 py-2.5 px-3 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all"
+                  >
+                    Sign Out
                   </button>
-                </div>
-
-                <div className="space-y-6 border-t border-gray-200 dark:border-gray-700 px-4 py-6">
-                  <div className="flow-root">
-                    <Link
-                      href="/dashboard"
-                      className="-m-2 block p-2 font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                  </div>
-                  <div className="flow-root">
-                    <Link
-                      href="/about"
-                      className="-m-2 block p-2 font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      About
-                    </Link>
-                  </div>
-                  <div className="flow-root">
-                    <Link
-                      href="/contact"
-                      className="-m-2 block p-2 font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Contact
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-6">
-                  {isAuthenticated ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-3">
-                        <Link
-                          href="/profile"
-                          className="relative flex items-center justify-center w-10 h-10 bg-gray-100 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors group"
-                          title="View Profile"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          {profile?.avatar_url ? (
-                            <Image 
-                              src={profile.avatar_url} 
-                              alt="Profile" 
-                              width={32}
-                              height={32}
-                              className="w-8 h-8 rounded-full object-cover"
-                            />
-                          ) : (
-                            <User className="h-5 w-5 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-                          )}
-                        </Link>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          Welcome, {profile?.name || 'User'}!
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          handleSignOut()
-                          setIsMobileMenuOpen(false)
-                        }}
-                        className="w-full bg-gradient-to-r from-red-500 to-red-600 dark:from-red-600 dark:to-red-700 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 dark:hover:from-red-700 dark:hover:to-red-800 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
-                      >
-                        Sign Out
-                      </button>
-                    </div>
-                  ) : (
-                    <Link 
-                      href="/auth" 
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-600 dark:hover:to-indigo-600 transition-all duration-200 shadow-lg hover:shadow-xl font-medium text-center block"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Sign In
-                    </Link>
-                  )}
-                </div>
-              </div>
+                </>
+              ) : (
+                <Link 
+                  href="/auth" 
+                  className="block text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 py-2.5 px-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-sm text-center transition-all mt-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Get Started
+                </Link>
+              )}
             </div>
           </div>
         )}
       </header>
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-blue-800 dark:via-blue-900 dark:to-indigo-900 text-white py-24 overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 bg-black/10 dark:bg-black/20"></div>
-        {/* Enhanced animated background */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2">
-            <div className="w-96 h-96 bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse"></div>
-          </div>
-          <div className="absolute bottom-0 left-0 transform -translate-x-1/2 translate-y-1/2">
-            <div className="w-96 h-96 bg-gradient-to-tr from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          </div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <div className="w-64 h-64 bg-gradient-to-r from-cyan-400/10 to-blue-400/10 rounded-full blur-2xl animate-bounce"></div>
-          </div>
+      <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-40 dark:opacity-20">
+          <div className="absolute top-20 right-10 w-72 h-72 bg-blue-500/10 dark:bg-blue-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 left-10 w-96 h-96 bg-indigo-500/10 dark:bg-indigo-400/10 rounded-full blur-3xl"></div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="max-w-5xl mx-auto">
-            {/* Enhanced badge */}
-            <div className="inline-flex items-center px-6 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-sm font-medium mb-8 hover:bg-white/20 transition-all duration-300">
-              <Heart className="h-4 w-4 mr-2 text-red-400" />
-              Smart Healthcare Management
-              <div className="w-2 h-2 bg-green-400 rounded-full ml-3 animate-pulse"></div>
-            </div>
-
-            <h2 className="text-6xl md:text-8xl font-black mb-8 leading-tight tracking-tight">
-              <span className="block text-white drop-shadow-2xl">Real-Time</span>
-              <span className="block bg-gradient-to-r from-blue-200 via-cyan-200 to-indigo-200 bg-clip-text text-transparent animate-pulse">
-                Hospital Intelligence
-              </span>
-            </h2>
-            
-            <p className="text-xl md:text-2xl mb-12 text-blue-100/90 max-w-4xl mx-auto leading-relaxed font-light">
-              🏥 Monitor bed availability • 🫁 Track oxygen levels • 📊 Analyze patient capacity
-              <br />
-              <span className="text-lg opacity-80">Make data-driven decisions for superior healthcare management</span>
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-              <Link 
-                href="/dashboard" 
-                className="group relative bg-white text-blue-600 px-12 py-5 rounded-2xl font-bold text-lg hover:bg-gray-50 transition-all duration-500 shadow-2xl hover:shadow-blue-500/25 transform hover:-translate-y-2 hover:scale-105 flex items-center overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
-                <Activity className="h-6 w-6 mr-3 group-hover:scale-125 group-hover:rotate-12 transition-all duration-300" />
-                <span className="relative z-10">View Dashboard</span>
-                <svg className="ml-3 h-5 w-5 group-hover:translate-x-2 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </Link>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left content */}
+            <div className="text-left">
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 mb-6">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></div>
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Real-time Healthcare Intelligence</span>
+              </div>
               
-              {!isAuthenticated && (
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight mb-6">
+                Smart Healthcare
+                <br />
+                <span className="text-blue-600 dark:text-blue-400">Resource Tracking</span>
+              </h1>
+              
+              <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-xl">
+                AI-powered disease prediction combined with real-time hospital resource monitoring. Make informed healthcare decisions with data-driven insights.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 mb-10">
                 <Link 
-                  href="/auth" 
-                  className="group relative border-2 border-white/30 backdrop-blur-md bg-white/10 text-white px-12 py-5 rounded-2xl font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 flex items-center overflow-hidden"
+                  href="/auth"
+                  className="inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl"
                 >
-                  <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <Users className="h-6 w-6 mr-3 group-hover:scale-125 group-hover:-rotate-12 transition-all duration-300 relative z-10" />
-                  <span className="relative z-10">Get Started</span>
+                  Get Started
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
-              )}
+                <Link 
+                  href="/about"
+                  className="inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                >
+                  Learn More
+                </Link>
+              </div>
+              
+              <div className="flex items-center space-x-8">
+                <div>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">5000+</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Beds Tracked</div>
+                </div>
+                <div className="w-px h-12 bg-gray-300 dark:bg-gray-700"></div>
+                <div>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">12</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Disease Models</div>
+                </div>
+                <div className="w-px h-12 bg-gray-300 dark:bg-gray-700"></div>
+                <div>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">24/7</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Monitoring</div>
+                </div>
+              </div>
             </div>
-
-            {/* Feature highlights */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:-translate-y-1">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center mb-4 mx-auto">
-                  <Activity className="h-6 w-6 text-white" />
+            
+            {/* Right content - Feature cards */}
+            <div className="relative">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center mb-4">
+                    <Activity className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Live Tracking</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Monitor hospital resources in real-time</p>
                 </div>
-                <h3 className="text-white font-semibold text-lg mb-2">Real-Time Monitoring</h3>
-                <p className="text-blue-100/80 text-sm">Live updates on bed availability and hospital capacity</p>
-              </div>
-              
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:-translate-y-1">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center mb-4 mx-auto">
-                  <Heart className="h-6 w-6 text-white" />
+                
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow mt-8">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center mb-4">
+                    <TrendingUp className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">AI Prediction</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Weather-based disease forecasting</p>
                 </div>
-                <h3 className="text-white font-semibold text-lg mb-2">Smart Analytics</h3>
-                <p className="text-blue-100/80 text-sm">AI-powered insights for better healthcare decisions</p>
-              </div>
-              
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition-all duration-300 transform hover:-translate-y-1">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center mb-4 mx-auto">
-                  <Users className="h-6 w-6 text-white" />
+                
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/50 flex items-center justify-center mb-4">
+                    <MapPin className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Location Based</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Find hospitals near you instantly</p>
                 </div>
-                <h3 className="text-white font-semibold text-lg mb-2">Multi-Role Access</h3>
-                <p className="text-blue-100/80 text-sm">Tailored interfaces for patients and administrators</p>
+                
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow mt-8">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 flex items-center justify-center mb-4">
+                    <Users className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Multi-Role</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Patients, hospitals, and admins</p>
+                </div>
               </div>
             </div>
           </div>
@@ -402,320 +392,162 @@ export default function Home() {
       )}
 
       {/* Enhanced Features Section */}
-      <section className="py-24 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900/20 relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-64 h-64 bg-purple-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-sm font-medium mb-6">
-              <Heart className="h-4 w-4 mr-2" />
-              Powerful Features
+      <section className="py-20 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 mb-6">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Why Choose SmartMed</span>
             </div>
-            <h3 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 leading-tight">
-              Everything You Need for
-              <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Smart Healthcare
-              </span>
+            <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              Comprehensive Healthcare Solutions
             </h3>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
-              Our platform revolutionizes hospital bed management with cutting-edge technology, 
-              real-time analytics, and intuitive interfaces designed for healthcare professionals.
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Everything you need to manage healthcare resources efficiently in one platform
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
+          <div className="grid md:grid-cols-3 gap-8">
             {/* Real-Time Monitoring Card */}
-            <div className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-white/20 dark:border-gray-700/50 transform hover:-translate-y-3 hover:scale-105">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                  <Activity className="h-8 w-8 text-white" />
-                </div>
-                <h4 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                  Real-Time Monitoring
-                </h4>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-                  Track bed availability, patient status, and hospital capacity across multiple facilities with instant updates and smart notifications.
-                </p>
-                <div className="flex items-center text-blue-600 dark:text-blue-400 font-medium group-hover:translate-x-2 transition-transform">
-                  Learn more <ArrowRight className="h-4 w-4 ml-2" />
-                </div>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transition-colors group">
+              <div className="w-14 h-14 bg-blue-50 dark:bg-blue-950/50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+                <Activity className="h-7 w-7 text-blue-600 dark:text-blue-400" />
               </div>
+              <h4 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">
+                Real-Time Tracking
+              </h4>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                Monitor bed availability, oxygen levels, and patient capacity across facilities with instant updates.
+              </p>
+              <Link href="/dashboard" className="inline-flex items-center text-blue-600 dark:text-blue-400 font-medium hover:gap-2 transition-all">
+                View Dashboard <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
             </div>
             
-            {/* Capacity Management Card */}
-            <div className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-white/20 dark:border-gray-700/50 transform hover:-translate-y-3 hover:scale-105">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                  <Users className="h-8 w-8 text-white" />
-                </div>
-                <h4 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-                  Smart Analytics
-                </h4>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-                  AI-powered insights for optimal bed allocation, patient flow optimization, and predictive capacity planning for better outcomes.
-                </p>
-                <div className="flex items-center text-green-600 dark:text-green-400 font-medium group-hover:translate-x-2 transition-transform">
-                  Explore features <ArrowRight className="h-4 w-4 ml-2" />
-                </div>
+            {/* Disease Prediction Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors group">
+              <div className="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
+                <TrendingUp className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
               </div>
+              <h4 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">
+                AI Disease Prediction
+              </h4>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                Weather-based disease forecasting using advanced AI models to predict health trends in your area.
+              </p>
+              <Link href="/about" className="inline-flex items-center text-indigo-600 dark:text-indigo-400 font-medium hover:gap-2 transition-all">
+                Learn More <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
             </div>
             
             {/* Location-Based Card */}
-            <div className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 border border-white/20 dark:border-gray-700/50 transform hover:-translate-y-3 hover:scale-105">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                  <MapPin className="h-8 w-8 text-white" />
-                </div>
-                <h4 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                  Multi-Role Access
-                </h4>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-                  Tailored interfaces for patients and administrators with location-based services, directions, and regional healthcare insights.
-                </p>
-                <div className="flex items-center text-purple-600 dark:text-purple-400 font-medium group-hover:translate-x-2 transition-transform">
-                  Get started <ArrowRight className="h-4 w-4 ml-2" />
-                </div>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 hover:border-rose-500 dark:hover:border-rose-400 transition-colors group">
+              <div className="w-14 h-14 bg-rose-50 dark:bg-rose-950/50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-rose-100 dark:group-hover:bg-rose-900/50 transition-colors">
+                <MapPin className="h-7 w-7 text-rose-600 dark:text-rose-400" />
               </div>
-            </div>
-          </div>
-
-          {/* Feature Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16">
-            <div className="text-center">
-              <div className="text-4xl font-black text-blue-600 dark:text-blue-400 mb-2">99.9%</div>
-              <div className="text-gray-600 dark:text-gray-400 font-medium">Uptime</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-black text-green-600 dark:text-green-400 mb-2">500+</div>
-              <div className="text-gray-600 dark:text-gray-400 font-medium">Hospitals</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-black text-purple-600 dark:text-purple-400 mb-2">24/7</div>
-              <div className="text-gray-600 dark:text-gray-400 font-medium">Support</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-black text-indigo-600 dark:text-indigo-400 mb-2">Real-time</div>
-              <div className="text-gray-600 dark:text-gray-400 font-medium">Updates</div>
+              <h4 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">
+                Location-Based Search
+              </h4>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+                Find nearby hospitals with available resources using PIN code-based filtering and smart matching.
+              </p>
+              <Link href="/contact" className="inline-flex items-center text-rose-600 dark:text-rose-400 font-medium hover:gap-2 transition-all">
+                Get Started <ArrowRight className="h-4 w-4 ml-1" />
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-white dark:bg-gray-800 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-indigo-600/5"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Trusted by Healthcare Providers</h3>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Join thousands of healthcare professionals who rely on our platform for critical decision making.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center group">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-8 group-hover:shadow-lg transition-all duration-300">
-                <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-3">24/7</div>
-                <div className="text-gray-700 font-semibold text-lg">Monitoring</div>
-                <div className="text-sm text-gray-500 mt-2">Continuous surveillance</div>
-              </div>
+      <section className="py-16 bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">99.9%</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">System Uptime</div>
             </div>
-            <div className="text-center group">
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 group-hover:shadow-lg transition-all duration-300">
-                <div className="text-4xl md:text-5xl font-bold text-green-600 mb-3">150+</div>
-                <div className="text-gray-700 font-semibold text-lg">Hospitals</div>
-                <div className="text-sm text-gray-500 mt-2">Partner facilities</div>
-              </div>
+            <div className="text-center">
+              <div className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">500+</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Partner Hospitals</div>
             </div>
-            <div className="text-center group">
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-8 group-hover:shadow-lg transition-all duration-300">
-                <div className="text-4xl md:text-5xl font-bold text-purple-600 mb-3">5000+</div>
-                <div className="text-gray-700 font-semibold text-lg">Beds Tracked</div>
-                <div className="text-sm text-gray-500 mt-2">Real-time updates</div>
-              </div>
+            <div className="text-center">
+              <div className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">24/7</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Live Support</div>
             </div>
-            <div className="text-center group">
-              <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl p-8 group-hover:shadow-lg transition-all duration-300">
-                <div className="text-4xl md:text-5xl font-bold text-indigo-600 mb-3">99.9%</div>
-                <div className="text-gray-700 font-semibold text-lg">Uptime</div>
-                <div className="text-sm text-gray-500 mt-2">Reliable service</div>
-              </div>
+            <div className="text-center">
+              <div className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">5000+</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Beds Monitored</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Enhanced CTA Section */}
-      <section className="py-24 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 relative overflow-hidden">
-        {/* Background animations */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 animate-pulse"></div>
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-bounce"></div>
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-bounce delay-1000"></div>
-        </div>
-        
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center px-6 py-3 rounded-full bg-white/20 backdrop-blur-lg text-white text-sm font-medium mb-8">
-            <Shield className="h-4 w-4 mr-2" />
-            Trusted by 500+ Healthcare Facilities
-          </div>
-          
-          <h3 className="text-5xl md:text-7xl font-black text-white mb-8 leading-tight">
-            Ready to Transform
-            <span className="block text-transparent bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text">
-              Healthcare Management?
-            </span>
+      {/* CTA Section */}
+      <section className="py-20 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h3 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+            Ready to Transform Healthcare Management?
           </h3>
-          
-          <p className="text-xl md:text-2xl text-blue-100 mb-12 max-w-4xl mx-auto leading-relaxed">
-            Join thousands of healthcare professionals who trust our platform for intelligent 
-            bed management, real-time monitoring, and data-driven insights.
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+            Join healthcare professionals using SmartMed to make data-driven decisions and improve patient outcomes.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
-            {!isAuthenticated ? (
-              <Link 
-                href="/auth" 
-                className="group relative px-10 py-5 bg-white text-blue-600 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-white/25 transition-all duration-300 transform hover:scale-110 hover:-translate-y-2 min-w-[200px]"
-              >
-                <span className="relative z-10 flex items-center justify-center">
-                  Get Started Free
-                  <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-2 transition-transform" />
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </Link>
-            ) : (
-              <Link 
-                href="/dashboard" 
-                className="group relative px-10 py-5 bg-white text-blue-600 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-white/25 transition-all duration-300 transform hover:scale-110 hover:-translate-y-2 min-w-[200px]"
-              >
-                <span className="relative z-10 flex items-center justify-center">
-                  Go to Dashboard
-                  <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-2 transition-transform" />
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </Link>
-            )}
-            
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
-              href="/contact" 
-              className="group px-10 py-5 border-2 border-white/30 text-white rounded-2xl font-bold text-lg backdrop-blur-lg hover:bg-white/10 hover:border-white/50 transition-all duration-300 transform hover:scale-105 min-w-[200px] flex items-center justify-center"
+              href="/auth"
+              className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl"
             >
-              Schedule Demo
-              <Building2 className="h-5 w-5 ml-2 group-hover:scale-110 transition-transform" />
+              Get Started Free
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+            <Link 
+              href="/contact"
+              className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+            >
+              Contact Sales
             </Link>
           </div>
-          
-          {/* Trust indicators */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-12 border-t border-white/20">
-            <div className="text-center">
-              <div className="text-3xl font-black text-white mb-2">ISO 27001</div>
-              <div className="text-blue-200 text-sm">Certified Security</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-black text-white mb-2">HIPAA</div>
-              <div className="text-blue-200 text-sm">Compliant</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-black text-white mb-2">99.9%</div>
-              <div className="text-blue-200 text-sm">SLA Uptime</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-black text-white mb-2">24/7</div>
-              <div className="text-blue-200 text-sm">Expert Support</div>
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* Enhanced Footer */}
-      <footer className="bg-gray-900 text-white py-16 border-t border-gray-800">
+      {/* Footer */}
+      <footer className="bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
-            <div className="md:col-span-2">
-              <div className="flex items-center mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-3">
-                  <Heart className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                  Smart Med Tracker
-                </span>
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <Heart className="h-6 w-6 text-rose-500 fill-rose-500" />
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">SmartMed</h3>
               </div>
-              <p className="text-gray-400 text-lg leading-relaxed mb-6 max-w-md">
-                Revolutionizing healthcare management with intelligent bed tracking, 
-                real-time analytics, and seamless integration across multiple facilities.
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Intelligent healthcare resource management powered by AI
               </p>
-              <div className="flex space-x-4">
-                <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors cursor-pointer">
-                  <Heart className="h-5 w-5" />
-                </div>
-                <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors cursor-pointer">
-                  <Mail className="h-5 w-5" />
-                </div>
-                <div className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors cursor-pointer">
-                  <Phone className="h-5 w-5" />
-                </div>
-              </div>
             </div>
-            
             <div>
-              <h5 className="font-bold text-lg mb-6 text-white">Quick Links</h5>
-              <div className="space-y-4">
-                <Link href="/dashboard" className="block text-gray-400 hover:text-blue-400 transition-colors font-medium">
-                  Dashboard
-                </Link>
-                <Link href="/about" className="block text-gray-400 hover:text-blue-400 transition-colors font-medium">
-                  About Us
-                </Link>
-                <Link href="/contact" className="block text-gray-400 hover:text-blue-400 transition-colors font-medium">
-                  Contact
-                </Link>
-                <Link href="/auth" className="block text-gray-400 hover:text-blue-400 transition-colors font-medium">
-                  Get Started
-                </Link>
-              </div>
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Product</h4>
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                <li><Link href="/dashboard" className="hover:text-gray-900 dark:hover:text-white transition-colors">Dashboard</Link></li>
+                <li><Link href="/about" className="hover:text-gray-900 dark:hover:text-white transition-colors">Features</Link></li>
+                <li><Link href="/contact" className="hover:text-gray-900 dark:hover:text-white transition-colors">Pricing</Link></li>
+              </ul>
             </div>
-            
             <div>
-              <h5 className="font-bold text-lg mb-6 text-white">Contact Info</h5>
-              <div className="space-y-4">
-                <div className="flex items-center text-gray-400">
-                  <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center mr-3">
-                    <Phone className="h-4 w-4" />
-                  </div>
-                  <span>+1 (555) 123-4567</span>
-                </div>
-                <div className="flex items-center text-gray-400">
-                  <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center mr-3">
-                    <Mail className="h-4 w-4" />
-                  </div>
-                  <span>info@hospitaltracker.com</span>
-                </div>
-                <div className="flex items-center text-gray-400">
-                  <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center mr-3">
-                    <MapPin className="h-4 w-4" />
-                  </div>
-                  <span>Healthcare District, Medical City</span>
-                </div>
-              </div>
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Company</h4>
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                <li><Link href="/about" className="hover:text-gray-900 dark:hover:text-white transition-colors">About</Link></li>
+                <li><Link href="/contact" className="hover:text-gray-900 dark:hover:text-white transition-colors">Contact</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Support</h4>
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                <li><Link href="/contact" className="hover:text-gray-900 dark:hover:text-white transition-colors">Help Center</Link></li>
+                <li><Link href="/contact" className="hover:text-gray-900 dark:hover:text-white transition-colors">Privacy</Link></li>
+                <li><Link href="/contact" className="hover:text-gray-900 dark:hover:text-white transition-colors">Terms</Link></li>
+              </ul>
             </div>
           </div>
-          
-          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 mb-4 md:mb-0">
-              &copy; 2025 Smart Med Tracker. All rights reserved. 
-              <span className="ml-2 text-blue-400">Privacy Policy</span> • 
-              <span className="ml-2 text-blue-400">Terms of Service</span>
-            </p>
-            <div className="text-sm text-gray-500">
-              Made with ❤️ for Healthcare Professionals
-            </div>
+          <div className="pt-8 border-t border-gray-200 dark:border-gray-800 text-center text-sm text-gray-600 dark:text-gray-400">
+            <p>© {new Date().getFullYear()} SmartMed. All rights reserved.</p>
           </div>
         </div>
       </footer>

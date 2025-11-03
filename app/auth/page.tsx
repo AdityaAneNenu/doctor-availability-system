@@ -1,14 +1,18 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { auth, db } from '@/lib/firebase'
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider
+} from 'firebase/auth'
+import { doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Eye, EyeOff, User, Building2, Heart, X } from 'lucide-react'
+import { Eye, EyeOff, User, Building2, Heart } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 function AuthForm() {
   // Common fields
@@ -23,6 +27,10 @@ function AuthForm() {
   // Role selection
   const [userType, setUserType] = useState('') // 'patient' or 'hospital_admin'
   
+  // Google Auth state
+  const [isGoogleAuth, setIsGoogleAuth] = useState(false)
+  const [googleUserId, setGoogleUserId] = useState('')
+  
   // Patient fields
   const [patientName, setPatientName] = useState('')
   const [age, setAge] = useState('')
@@ -31,13 +39,18 @@ function AuthForm() {
   // Hospital Admin fields
   const [adminName, setAdminName] = useState('')
   const [hospitalName, setHospitalName] = useState('')
-  const [address, setAddress] = useState('')
+  const [addressLine1, setAddressLine1] = useState('')
+  const [addressLine2, setAddressLine2] = useState('')
+  const [area, setArea] = useState('')
+  const [city, setCity] = useState('')
+  const [state, setState] = useState('')
+  const [pinCode, setPinCode] = useState('')
+  const [country] = useState('India') // Default country
   const [phoneNumber, setPhoneNumber] = useState('')
+  const [fetchingPinCode, setFetchingPinCode] = useState(false)
   
   const router = useRouter()
   const searchParams = useSearchParams()
-  
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
   useEffect(() => {
     const mode = searchParams.get('mode')
@@ -57,8 +70,46 @@ function AuthForm() {
   const validateHospitalAdminForm = () => {
     if (!adminName.trim()) throw new Error('Admin name is required')
     if (!hospitalName.trim()) throw new Error('Hospital name is required')
-    if (!address.trim()) throw new Error('Address is required')
+    if (!addressLine1.trim()) throw new Error('Address Line 1 is required')
+    if (!area.trim()) throw new Error('Area is required')
+    if (!city.trim()) throw new Error('City is required')
+    if (!state.trim()) throw new Error('State is required')
+    if (!pinCode.trim()) throw new Error('PIN Code is required')
+    if (!/^\d{6}$/.test(pinCode)) throw new Error('PIN Code must be 6 digits')
     if (!phoneNumber.trim()) throw new Error('Phone number is required')
+  }
+
+  // Fetch city and state based on PIN code using India Post API
+  const handlePinCodeChange = async (pin: string) => {
+    setPinCode(pin)
+    
+    // Only fetch if PIN code is 6 digits
+    if (pin.length === 6 && /^\d{6}$/.test(pin)) {
+      setFetchingPinCode(true)
+      try {
+        const response = await fetch(`https://api.postalpincode.in/pincode/${pin}`)
+        const data = await response.json()
+        
+        if (data && data[0]?.Status === 'Success' && data[0]?.PostOffice?.length > 0) {
+          const postOffice = data[0].PostOffice[0]
+          setCity(postOffice.District || '')
+          setState(postOffice.State || '')
+          setArea(postOffice.Name || '') // Post office name as area suggestion
+        } else {
+          // Clear fields if invalid PIN
+          setCity('')
+          setState('')
+        }
+      } catch (error) {
+        console.error('Error fetching PIN code data:', error)
+      } finally {
+        setFetchingPinCode(false)
+      }
+    } else if (pin.length < 6) {
+      // Clear city and state if PIN is incomplete
+      setCity('')
+      setState('')
+    }
   }
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -77,106 +128,146 @@ function AuthForm() {
           validateHospitalAdminForm()
         }
 
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-        })
-        if (error) throw error
+        // For Google Auth users, skip creating auth user (already authenticated)
+        let userId = googleUserId
         
-        // Update the user profile with the additional information
-        if (data.user) {
-          console.log('User Type Selected:', userType)
-          console.log('User ID:', data.user.id)
+        if (!isGoogleAuth) {
+          // Create Firebase auth user only for email/password signup
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+          userId = userCredential.user.uid
+        }
+        
+        console.log('User Type Selected:', userType)
+        console.log('User ID:', userId)
+        
+        if (userType === 'patient') {
+          // Handle patient registration
+          const profileData = {
+            id: userId,
+            email: email,
+            name: patientName.trim(),
+            age: parseInt(age),
+            sex: sex,
+            role: 'patient',
+            authProvider: isGoogleAuth ? 'google' : 'email',
+            created_at: serverTimestamp()
+          }
+
+          console.log('Profile Data to Insert:', profileData)
+
+          // Create profile document in Firestore
+          await setDoc(doc(db, 'profiles', userId), profileData)
           
-          if (userType === 'patient') {
-            // Handle patient registration
-            const profileData = {
-              id: data.user.id,
-              name: patientName.trim(),
-              age: parseInt(age),
-              sex: sex,
-              role: 'patient'
-            }
+          console.log('Patient profile created successfully')
+          
+        } else if (userType === 'hospital_admin') {
+          // Handle hospital admin registration
+          try {
+            // Combine address fields into full address
+            const fullAddress = [
+              addressLine1.trim(),
+              addressLine2.trim(),
+              area.trim(),
+              `${city.trim()}, ${state.trim()} - ${pinCode.trim()}`,
+              country
+            ].filter(Boolean).join(', ')
 
-            console.log('Profile Data to Insert:', profileData)
+            // Create hospital document with auto-generated ID
+            const hospitalRef = doc(db, 'hospitals', userId + '_hospital')
+            await setDoc(hospitalRef, {
+              id: hospitalRef.id,
+              name: hospitalName.trim(),
+              address: fullAddress,
+              phone: phoneNumber.trim(),
+              admin_id: userId,
+              created_at: serverTimestamp()
+            })
 
-            const { data: upsertData, error: profileError } = await supabase
-              .from('profiles')
-              .upsert(profileData, { 
-                onConflict: 'id',
-                ignoreDuplicates: false 
-              })
-              .select()
+            // Create admin profile with hospital reference
+            await setDoc(doc(db, 'profiles', userId), {
+              id: userId,
+              email: email,
+              name: adminName.trim(),
+              age: 0,
+              sex: 'other',
+              role: 'hospital_admin',
+              hospital_id: hospitalRef.id,
+              hospital_name: hospitalName.trim(),
+              phone_number: phoneNumber.trim(),
+              authProvider: isGoogleAuth ? 'google' : 'email',
+              created_at: serverTimestamp()
+            })
+
+            console.log('Hospital created successfully with ID:', hospitalRef.id)
             
-            if (profileError) {
-              console.error('Profile upsert error:', profileError)
-              alert('Failed to create profile: ' + profileError.message)
-              return
-            }
-            
-            console.log('Patient profile created successfully:', upsertData)
-            
-          } else if (userType === 'hospital_admin') {
-            // Handle hospital admin registration
-            try {
-              // First update the profile to hospital_admin role
-              const { error: profileError } = await supabase
-                .from('profiles')
-                .upsert({
-                  id: data.user.id,
-                  name: adminName.trim(),
-                  age: 0,
-                  sex: 'other',
-                  role: 'hospital_admin',
-                  phone_number: phoneNumber.trim()
-                }, { 
-                  onConflict: 'id',
-                  ignoreDuplicates: false 
-                })
-              
-              if (profileError) {
-                console.error('Profile update error:', profileError)
-                alert('Failed to update profile: ' + profileError.message)
-                return
-              }
-
-              // Create the hospital and link it to the admin
-              const { data: hospitalData, error: hospitalError } = await supabase
-                .rpc('create_hospital_for_admin', {
-                  admin_id: data.user.id,
-                  hospital_name: hospitalName.trim(),
-                  hospital_address: address.trim(),
-                  hospital_phone: phoneNumber.trim()
-                })
-
-              if (hospitalError) {
-                console.error('Hospital creation error:', hospitalError)
-                alert('Failed to create hospital: ' + hospitalError.message)
-                return
-              }
-
-              console.log('Hospital created successfully with ID:', hospitalData)
-              
-            } catch (error: unknown) {
-              console.error('Hospital admin registration error:', error)
-              const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-              alert('Failed to complete hospital admin registration: ' + errorMessage)
-              return
-            }
+          } catch (error: unknown) {
+            console.error('Hospital admin registration error:', error)
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+            alert('Failed to complete hospital admin registration: ' + errorMessage)
+            return
           }
         }
         
-        alert(`${userType === 'patient' ? 'Patient' : 'Hospital Admin'} account created! Check your email for the confirmation link!`)
+        alert(`${userType === 'patient' ? 'Patient' : 'Hospital Admin'} account created! ${isGoogleAuth ? 'Redirecting to dashboard...' : 'You can now log in.'}`)
+        
+        if (isGoogleAuth) {
+          router.push('/dashboard') // Google auth users are already signed in
+        } else {
+          setIsSignUp(false) // Switch to login mode for email/password users
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-        if (error) throw error
+        // Sign in with Firebase
+        await signInWithEmailAndPassword(auth, email, password)
         router.push('/')
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Authentication failed'
+      setError(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Google Sign-In Handler
+  const handleGoogleSignIn = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const provider = new GoogleAuthProvider()
+      const result = await signInWithPopup(auth, provider)
+      const user = result.user
+      
+      console.log('Google Sign-In successful:', user.uid)
+      
+      // Check if user already has a profile in Firestore
+      const userDoc = await getDoc(doc(db, 'profiles', user.uid))
+      
+      if (userDoc.exists()) {
+        // Existing user - redirect to dashboard
+        console.log('Existing user found, redirecting to dashboard')
+        router.push('/dashboard')
+      } else {
+        // New user - show registration form with pre-filled data
+        console.log('New Google user, showing registration form')
+        
+        // Extract name from Google profile
+        const displayName = user.displayName || ''
+        
+        // Pre-fill the form
+        setEmail(user.email || '')
+        setPatientName(displayName)
+        setAdminName(displayName)
+        setGoogleUserId(user.uid)
+        setIsGoogleAuth(true)
+        setIsSignUp(true)
+        
+        // Don't set userType yet - let user choose
+        alert('Welcome! Please complete your profile to continue.')
+      }
+    } catch (error: unknown) {
+      console.error('Google Sign-In error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Google sign-in failed'
       setError(errorMessage)
     } finally {
       setLoading(false)
@@ -190,57 +281,60 @@ function AuthForm() {
     setSex('')
     setAdminName('')
     setHospitalName('')
-    setAddress('')
+    setAddressLine1('')
+    setAddressLine2('')
+    setArea('')
+    setCity('')
+    setState('')
+    setPinCode('')
     setPhoneNumber('')
+    setIsGoogleAuth(false)
+    setGoogleUserId('')
   }
 
   return (
     <>
       {/* Navigation */}
-      <nav className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-700 sticky top-0 z-50">
+      <nav className="fixed top-0 left-0 right-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-3">
-              <Heart className="h-8 w-8 text-red-500" />
-              <Link href="/" className="hover:opacity-80 transition-opacity">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  Smart Med Tracker
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-2.5">
+              <div className="relative">
+                <Heart className="h-7 w-7 text-rose-500 fill-rose-500" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+              </div>
+              <Link href="/" className="group">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+                  Smart<span className="text-rose-500">Med</span>
                 </h1>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 -mt-0.5">Health Intelligence</p>
               </Link>
             </div>
             
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/dashboard" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+            <nav className="hidden md:flex items-center space-x-1">
+              <Link href="/dashboard" className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
                 Dashboard
               </Link>
-              <Link href="/profile" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
-                Profile
-              </Link>
-              <Link href="/about" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+              <Link href="/about" className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
                 About
               </Link>
-              <Link href="/contact" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+              <Link href="/contact" className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
                 Contact
               </Link>
               
-              <ThemeToggle />
+              <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-2"></div>
               
-              <Link 
-                href="/auth" 
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-600 dark:hover:to-indigo-600 transition-all duration-200 shadow-lg hover:shadow-xl font-medium ml-2"
-              >
-                Sign In
-              </Link>
+              <ThemeToggle />
             </nav>
             
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center space-x-2">
               <ThemeToggle />
               <button 
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
@@ -250,91 +344,82 @@ function AuthForm() {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden">
-            <div className="fixed inset-0 z-50 lg:hidden">
-              <div className="fixed inset-0 bg-black bg-opacity-25" onClick={() => setIsMobileMenuOpen(false)}></div>
-              <div className="relative flex w-full max-w-xs flex-col bg-white dark:bg-gray-900 pb-12 shadow-xl">
-                <div className="flex px-4 pb-2 pt-5">
-                  <button
-                    type="button"
-                    className="-m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:text-gray-500"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <X className="h-6 w-6" />
-                  </button>
-                </div>
-
-                <div className="space-y-6 border-t border-gray-200 dark:border-gray-700 px-4 py-6">
-                  <div className="flow-root">
-                    <Link
-                      href="/dashboard"
-                      className="-m-2 block p-2 font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                  </div>
-                  <div className="flow-root">
-                    <Link
-                      href="/profile"
-                      className="-m-2 block p-2 font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Profile
-                    </Link>
-                  </div>
-                  <div className="flow-root">
-                    <Link
-                      href="/about"
-                      className="-m-2 block p-2 font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      About
-                    </Link>
-                  </div>
-                  <div className="flow-root">
-                    <Link
-                      href="/contact"
-                      className="-m-2 block p-2 font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Contact
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-6">
-                  <div className="space-y-4">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Sign in to access your account
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+            <div className="px-4 py-3 space-y-1">
+              <Link 
+                href="/dashboard" 
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <Link 
+                href="/about" 
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                About
+              </Link>
+              <Link 
+                href="/contact" 
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
             </div>
           </div>
         )}
       </nav>
 
       {/* Auth Form */}
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-center min-h-screen pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               {isSignUp ? 'Create your account' : 'Welcome back'}
             </h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600 dark:text-gray-400">
               {isSignUp 
-                ? 'Join Smart Med Tracker to access real-time hospital data' 
+                ? 'Join SmartMed to access real-time healthcare data' 
                 : 'Sign in to access your dashboard'
               }
             </p>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border dark:border-gray-700 p-8">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 shadow-sm">
+            {/* Google Sign-In Button - Only show when not in signup mode or when choosing user type */}
+            {(!isSignUp || (isSignUp && !userType)) && !isGoogleAuth && (
+              <div className="mb-6">
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  {loading ? 'Connecting...' : 'Continue with Google'}
+                </button>
+                
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">OR</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form className="space-y-6" onSubmit={handleAuth}>
               {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg">
+                <div className="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 px-4 py-3 rounded-lg text-sm">
                   {error}
                 </div>
               )}
@@ -342,7 +427,7 @@ function AuthForm() {
               {/* User Type Selection for Signup */}
               {isSignUp && !userType && (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-6">
                     Select Account Type
                   </h3>
                   
@@ -350,24 +435,28 @@ function AuthForm() {
                     <button
                       type="button"
                       onClick={() => setUserType('patient')}
-                      className="flex items-center p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                      className="flex items-center p-5 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all group"
                     >
-                      <User className="h-8 w-8 text-blue-600 dark:text-blue-400 mr-4" />
+                      <div className="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center mr-4 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50">
+                        <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                      </div>
                       <div className="text-left">
-                        <div className="font-semibold text-gray-900 dark:text-white">Patient</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Find and track hospital bed availability</div>
+                        <div className="font-semibold text-gray-900 dark:text-white mb-1">Patient</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Find and track hospital resources</div>
                       </div>
                     </button>
                     
                     <button
                       type="button"
                       onClick={() => setUserType('hospital_admin')}
-                      className="flex items-center p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                      className="flex items-center p-5 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all group"
                     >
-                      <Building2 className="h-8 w-8 text-blue-600 dark:text-blue-400 mr-4" />
+                      <div className="w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 flex items-center justify-center mr-4 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50">
+                        <Building2 className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                      </div>
                       <div className="text-left">
-                        <div className="font-semibold text-gray-900 dark:text-white">Hospital Admin</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">Manage hospital data and bed availability</div>
+                        <div className="font-semibold text-gray-900 dark:text-white mb-1">Hospital Admin</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Manage hospital data and availability</div>
                       </div>
                     </button>
                   </div>
@@ -380,13 +469,14 @@ function AuthForm() {
                   {/* Common Email Field */}
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Email address
+                      Email address {isGoogleAuth && <span className="text-xs text-blue-600 dark:text-blue-400">(from Google)</span>}
                     </label>
                     <input
                       id="email"
                       type="email"
                       required
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                      disabled={isGoogleAuth}
+                      className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors ${isGoogleAuth ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-800' : ''}`}
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -398,7 +488,7 @@ function AuthForm() {
                     <>
                       <div>
                         <label htmlFor="patientName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Full Name *
+                          Full Name * {isGoogleAuth && <span className="text-xs text-blue-600 dark:text-blue-400">(from Google)</span>}
                         </label>
                         <input
                           id="patientName"
@@ -409,6 +499,9 @@ function AuthForm() {
                           value={patientName}
                           onChange={(e) => setPatientName(e.target.value)}
                         />
+                        {isGoogleAuth && patientName && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">✓ Auto-filled from your Google account</p>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
@@ -455,7 +548,7 @@ function AuthForm() {
                     <>
                       <div>
                         <label htmlFor="adminName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Admin Name *
+                          Admin Name * {isGoogleAuth && <span className="text-xs text-blue-600 dark:text-blue-400">(from Google)</span>}
                         </label>
                         <input
                           id="adminName"
@@ -466,6 +559,9 @@ function AuthForm() {
                           value={adminName}
                           onChange={(e) => setAdminName(e.target.value)}
                         />
+                        {isGoogleAuth && adminName && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">✓ Auto-filled from your Google account</p>
+                        )}
                       </div>
 
                       <div>
@@ -483,18 +579,124 @@ function AuthForm() {
                         />
                       </div>
 
+                      {/* Address Line 1 */}
                       <div>
-                        <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Address *
+                        <label htmlFor="addressLine1" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Address Line 1 *
                         </label>
-                        <textarea
-                          id="address"
+                        <input
+                          id="addressLine1"
+                          type="text"
                           required
-                          rows={3}
                           className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
-                          placeholder="Enter hospital address"
-                          value={address}
-                          onChange={(e) => setAddress(e.target.value)}
+                          placeholder="Building/House No., Street Name"
+                          value={addressLine1}
+                          onChange={(e) => setAddressLine1(e.target.value)}
+                        />
+                      </div>
+
+                      {/* Address Line 2 */}
+                      <div>
+                        <label htmlFor="addressLine2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Address Line 2 (Optional)
+                        </label>
+                        <input
+                          id="addressLine2"
+                          type="text"
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                          placeholder="Landmark, Colony, etc."
+                          value={addressLine2}
+                          onChange={(e) => setAddressLine2(e.target.value)}
+                        />
+                      </div>
+
+                      {/* PIN Code - First so it can auto-fill city/state */}
+                      <div>
+                        <label htmlFor="pinCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          PIN Code *
+                        </label>
+                        <input
+                          id="pinCode"
+                          type="text"
+                          required
+                          maxLength={6}
+                          pattern="[0-9]{6}"
+                          inputMode="numeric"
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                          placeholder="Enter 6-digit PIN code"
+                          value={pinCode}
+                          onChange={(e) => {
+                            const numericValue = e.target.value.replace(/[^0-9]/g, '')
+                            handlePinCodeChange(numericValue)
+                          }}
+                        />
+                        {fetchingPinCode && (
+                          <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                            Fetching location details...
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Area */}
+                      <div>
+                        <label htmlFor="area" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Area/Locality *
+                        </label>
+                        <input
+                          id="area"
+                          type="text"
+                          required
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                          placeholder="Area/Locality"
+                          value={area}
+                          onChange={(e) => setArea(e.target.value)}
+                        />
+                      </div>
+
+                      {/* City and State - Two columns */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="city" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            City *
+                          </label>
+                          <input
+                            id="city"
+                            type="text"
+                            required
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                            placeholder="City"
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="state" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            State *
+                          </label>
+                          <input
+                            id="state"
+                            type="text"
+                            required
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                            placeholder="State"
+                            value={state}
+                            onChange={(e) => setState(e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Country - Read only */}
+                      <div>
+                        <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Country
+                        </label>
+                        <input
+                          id="country"
+                          type="text"
+                          readOnly
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400 rounded-lg cursor-not-allowed"
+                          value={country}
                         />
                       </div>
 
@@ -527,50 +729,65 @@ function AuthForm() {
                     </>
                   )}
 
-                  {/* Password Field */}
-                  <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <input
-                        id="password"
-                        type={showPassword ? 'text' : 'password'}
-                        required
-                        className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                        ) : (
-                          <Eye className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                        )}
-                      </button>
+                  {/* Password Field - Hide for Google Auth */}
+                  {!isGoogleAuth && (
+                    <div>
+                      <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          id="password"
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                          placeholder="Enter your password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                          ) : (
+                            <Eye className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                          )}
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Submit Button */}
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-600 dark:hover:to-indigo-600 transition-all duration-200 shadow-lg hover:shadow-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 py-3 px-4 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                   >
-                    {loading ? 'Loading...' : (isSignUp ? 'Create Account' : 'Sign In')}
+                    {loading ? 'Loading...' : (
+                      isSignUp 
+                        ? (isGoogleAuth ? 'Complete Registration' : 'Create Account')
+                        : 'Sign In'
+                    )}
                   </button>
+
+                  {/* Google Auth Info */}
+                  {isGoogleAuth && isSignUp && (
+                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        🎉 You're signing in with Google! Complete your profile to get started.
+                      </p>
+                    </div>
+                  )}
 
                   {/* Back button for signup */}
                   {isSignUp && userType && (
                     <button
                       type="button"
                       onClick={resetForm}
-                      className="w-full text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                      className="w-full text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors text-sm"
                     >
                       ← Back to account type selection
                     </button>
@@ -582,7 +799,7 @@ function AuthForm() {
             <div className="mt-6 text-center">
               <button
                 type="button"
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm"
                 onClick={() => {
                   setIsSignUp(!isSignUp)
                   resetForm()
@@ -602,34 +819,8 @@ function AuthForm() {
 }
 
 export default function AuthPage() {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Configuration Required
-          </h2>
-          <div className="mt-8 bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-yellow-800">
-                    Supabase Configuration Missing
-                  </h3>
-                  <div className="mt-2 text-sm text-yellow-700">
-                    <p>Please set up your Supabase environment variables.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Suspense fallback={<div>Loading...</div>}>
         <AuthForm />
       </Suspense>

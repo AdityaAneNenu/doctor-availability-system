@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Activity, Mail, Phone, MapPin, Send, X, User } from 'lucide-react'
+import { Activity, Mail, Phone, MapPin, Send, X, User, Heart } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
 import { useAuth } from '@/lib/useAuthFixed'
 
@@ -47,23 +47,30 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       {/* Navigation */}
-      <nav className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50">
+      <nav className="fixed top-0 left-0 right-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-3">
-              <Activity className="h-8 w-8 text-red-500" />
-              <Link href="/" className="hover:opacity-80 transition-opacity">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  Smart Med Tracker
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-2.5">
+              <div className="relative">
+                <Heart className="h-7 w-7 text-rose-500 fill-rose-500" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+              </div>
+              <Link href="/" className="group">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+                  Smart<span className="text-rose-500">Med</span>
                 </h1>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 -mt-0.5">Health Intelligence</p>
               </Link>
             </div>
             
             <nav className="hidden md:flex items-center space-x-6">
               <Link href="/dashboard" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                 Dashboard
+              </Link>
+              <Link href="/admission" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                Admission AI
               </Link>
               <Link href="/about" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                 About
@@ -153,6 +160,15 @@ export default function ContactPage() {
                   </div>
                   <div className="flow-root">
                     <Link
+                      href="/admission"
+                      className="-m-2 block p-2 font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Admission AI
+                    </Link>
+                  </div>
+                  <div className="flow-root">
+                    <Link
                       href="/about"
                       className="-m-2 block p-2 font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
                       onClick={() => setIsMobileMenuOpen(false)}
@@ -230,7 +246,7 @@ export default function ContactPage() {
             Contact Us
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 leading-relaxed">
-            We&apos;re here to help. Get in touch with our team for support, partnerships, or any questions about Smart Med Tracker.
+            We&apos;re here to help. Get in touch with our team for support, partnerships, or any questions about SmartMed.
           </p>
         </div>
       </section>
@@ -430,8 +446,8 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
-              <Activity className="h-6 w-6 text-blue-400" />
-              <span className="text-xl font-bold">Smart Med Tracker</span>
+              <Heart className="h-6 w-6 text-rose-500 fill-rose-500" />
+              <span className="text-xl font-bold">SmartMed</span>
             </div>
             <p className="text-gray-400">
               Connecting patients with healthcare facilities through real-time bed availability tracking.
@@ -442,7 +458,7 @@ export default function ContactPage() {
               <Link href="/auth" className="text-gray-400 hover:text-white transition-colors">Sign In</Link>
             </div>
             <div className="border-t border-gray-800 dark:border-gray-700 mt-8 pt-8 text-gray-400">
-              <p>&copy; 2025 Smart Med Tracker. All rights reserved.</p>
+              <p>&copy; 2025 SmartMed. All rights reserved.</p>
             </div>
           </div>
         </div>

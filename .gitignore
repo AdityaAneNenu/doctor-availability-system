@@ -39,3 +39,6 @@ pids
 tmp/
 temp/
 .vercel
+
+# Documentation scripts
+mdscripts/
