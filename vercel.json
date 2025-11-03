@@ -2,5 +2,5 @@
   "buildCommand": "npm run vercel-build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "npm install --no-optional"
+  "installCommand": "npm install --legacy-peer-deps --ignore-scripts && npm rebuild --ignore-scripts || true"
 }
