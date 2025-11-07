@@ -9,29 +9,29 @@ import MLValidationPanel from '@/components/MLValidationPanel'
 
 export default function ValidationPage() {
   return (
-    <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-950">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Page Header */}
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold">Faculty Validation Dashboard</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Faculty Validation Dashboard</h1>
           <p className="text-xl text-gray-600 dark:text-gray-400">
             Machine Learning Model Accuracy Validation using Government Health Data
           </p>
         </div>
 
         {/* Information Card */}
-        <div className="border rounded-lg p-6 bg-white dark:bg-gray-800 shadow-sm">
-          <h2 className="text-2xl font-bold mb-4">📊 About This Validation</h2>
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800 shadow-sm">
+          <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">📊 About This Validation</h2>
           
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <h3 className="font-semibold text-lg">🎯 Objective</h3>
+              <h3 className="font-semibold text-lg text-gray-900 dark:text-white">🎯 Objective</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Validate the disease prediction system by comparing ML model predictions 
                 with rule-based system against real government health data.
               </p>
               
-              <h3 className="font-semibold text-lg pt-2">📈 Dataset</h3>
+              <h3 className="font-semibold text-lg pt-2 text-gray-900 dark:text-white">📈 Dataset</h3>
               <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                 <li>• 15 government health records from multiple cities</li>
                 <li>• Covers metro, tier-1, tier-2, and rural areas</li>
@@ -41,7 +41,7 @@ export default function ValidationPage() {
             </div>
 
             <div className="space-y-3">
-              <h3 className="font-semibold text-lg">🤖 ML Model Architecture</h3>
+              <h3 className="font-semibold text-lg text-gray-900 dark:text-white">🤖 ML Model Architecture</h3>
               <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                 <li>• Neural Network: 10 → 64 → 128 → 64 → 32 → 1</li>
                 <li>• Input: Temperature, Humidity, Rainfall, Population, Disease Cases</li>
@@ -50,7 +50,7 @@ export default function ValidationPage() {
                 <li>• Optimizer: Adam with learning rate 0.001</li>
               </ul>
 
-              <h3 className="font-semibold text-lg pt-2">✅ Accuracy Metrics</h3>
+              <h3 className="font-semibold text-lg pt-2 text-gray-900 dark:text-white">✅ Accuracy Metrics</h3>
               <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                 <li>• Mean Absolute Error (MAE)</li>
                 <li>• Percentage Accuracy vs Ground Truth</li>
@@ -59,11 +59,11 @@ export default function ValidationPage() {
             </div>
           </div>
 
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-            <h3 className="font-semibold mb-2">📍 Available Test Pincodes</h3>
+          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-900">
+            <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">📍 Available Test Pincodes</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
               <div>
-                <p className="font-medium">Metro Cities</p>
+                <p className="font-medium text-gray-900 dark:text-white">Metro Cities</p>
                 <p className="text-gray-600 dark:text-gray-400">560001 (Bangalore)</p>
                 <p className="text-gray-600 dark:text-gray-400">400001 (Mumbai)</p>
                 <p className="text-gray-600 dark:text-gray-400">600001 (Chennai)</p>
@@ -71,7 +71,7 @@ export default function ValidationPage() {
                 <p className="text-gray-600 dark:text-gray-400">700001 (Kolkata)</p>
               </div>
               <div>
-                <p className="font-medium">Tier-1 Cities</p>
+                <p className="font-medium text-gray-900 dark:text-white">Tier-1 Cities</p>
                 <p className="text-gray-600 dark:text-gray-400">302001 (Jaipur)</p>
                 <p className="text-gray-600 dark:text-gray-400">380001 (Ahmedabad)</p>
                 <p className="text-gray-600 dark:text-gray-400">226001 (Lucknow)</p>
@@ -79,12 +79,12 @@ export default function ValidationPage() {
                 <p className="text-gray-600 dark:text-gray-400">141001 (Ludhiana)</p>
               </div>
               <div>
-                <p className="font-medium">Tier-2 Cities</p>
+                <p className="font-medium text-gray-900 dark:text-white">Tier-2 Cities</p>
                 <p className="text-gray-600 dark:text-gray-400">580020 (Hubli)</p>
                 <p className="text-gray-600 dark:text-gray-400">324009 (Kota)</p>
               </div>
               <div>
-                <p className="font-medium">Rural Areas</p>
+                <p className="font-medium text-gray-900 dark:text-white">Rural Areas</p>
                 <p className="text-gray-600 dark:text-gray-400">416704 (Ratnagiri)</p>
                 <p className="text-gray-600 dark:text-gray-400">221010 (Ghazipur)</p>
               </div>
@@ -96,10 +96,10 @@ export default function ValidationPage() {
         <MLValidationPanel />
 
         {/* Footer */}
-        <div className="border rounded-lg p-6 bg-white dark:bg-gray-800 shadow-sm">
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800 shadow-sm">
           <div className="text-center space-y-2">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              <strong>Ground Truth Calculation:</strong> Government data provides actual disease cases. 
+              <strong className="text-gray-900 dark:text-white">Ground Truth Calculation:</strong> Government data provides actual disease cases. 
               Required doctors = max(total_cases / 50, population / 1000) based on WHO standards.
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-500">
