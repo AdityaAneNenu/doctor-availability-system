@@ -19,6 +19,9 @@ export default function Home() {
     }
   }
 
+  // Debug logging for authentication state
+  console.log('Home page - Auth state:', { isAuthenticated, profile: profile?.name, loading })
+
   // Simple, fast loading check
   if (loading) {
     return (
@@ -30,6 +33,10 @@ export default function Home() {
       </div>
     )
   }
+
+  // If user is authenticated and has a profile, show a dashboard redirect message for mobile
+  // but don't force redirect to let them choose
+  const showMobileDashboardLink = isAuthenticated && profile
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
       {/* Header */}
@@ -149,32 +156,54 @@ export default function Home() {
                 Contact
               </Link>
               {isAuthenticated ? (
-                <>
-                  <Link 
-                    href="/profile" 
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                <div className="pt-3 border-t border-gray-200 dark:border-gray-800">
+                  <Link
+                    href="/profile"
+                    className="flex items-center space-x-3 py-2.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all mb-2"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Profile
+                    <div className="flex items-center justify-center w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full">
+                      {profile?.avatar_url ? (
+                        <Image 
+                          src={profile.avatar_url} 
+                          alt="Profile" 
+                          width={24}
+                          height={24}
+                          className="w-6 h-6 rounded-full object-cover"
+                        />
+                      ) : (
+                        <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                      )}
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {profile?.name || 'User'}
+                      </span>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {profile?.role === 'hospital_admin' ? 'Hospital Admin' : 'Patient'}
+                      </div>
+                    </div>
                   </Link>
                   <button 
                     onClick={() => {
                       handleSignOut();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full text-left text-sm font-medium text-rose-600 dark:text-rose-400 py-2.5 px-3 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all"
+                    className="w-full text-sm font-medium text-rose-600 dark:text-rose-400 py-2.5 px-3 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all"
                   >
                     Sign Out
                   </button>
-                </>
+                </div>
               ) : (
-                <Link 
-                  href="/auth" 
-                  className="block text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 py-2.5 px-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-sm text-center transition-all mt-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Get Started
-                </Link>
+                <div className="pt-3 border-t border-gray-200 dark:border-gray-800">
+                  <Link 
+                    href="/auth" 
+                    className="block text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 py-2.5 px-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-sm text-center transition-all"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Get Started
+                  </Link>
+                </div>
               )}
             </div>
           </div>
@@ -286,6 +315,26 @@ export default function Home() {
       {isAuthenticated && profile && (
         <section className="py-16 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 border-b border-gray-200 dark:border-gray-700">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Mobile Logged-in Banner - Only visible on mobile */}
+            <div className="md:hidden mb-6">
+              <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-4 text-white text-center shadow-lg">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium">Account Active</span>
+                </div>
+                <h3 className="text-lg font-bold mb-2">
+                  Welcome back, {profile.name}! 👋
+                </h3>
+                <p className="text-sm opacity-90 mb-3">You&apos;re signed in and ready to access your healthcare dashboard</p>
+                <Link 
+                  href="/dashboard" 
+                  className="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition-all"
+                >
+                  Go to Dashboard →
+                </Link>
+              </div>
+            </div>
+
             <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20 dark:border-gray-700/50 hover:shadow-3xl transition-all duration-500">
               {/* Welcome Header */}
               <div className="text-center mb-8">

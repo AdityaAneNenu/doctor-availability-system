@@ -42,3 +42,12 @@ temp/
 
 # Documentation scripts
 mdscripts/
+
+# Real government data CSV files (downloaded from data.gov.in)
+# These should not be committed - users download their own
+data/*.csv
+data/*.xls
+data/*.xlsx
+data/*.json
+# But keep the README
+!data/README.md

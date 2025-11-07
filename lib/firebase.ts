@@ -6,7 +6,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app'
 import { getAuth, Auth } from 'firebase/auth'
 import { getFirestore, Firestore } from 'firebase/firestore'
-import { getStorage, FirebaseStorage } from 'firebase/storage'
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -18,13 +17,32 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
+// Debug: Log configuration in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('Firebase Config:', {
+    apiKey: firebaseConfig.apiKey ? '✅ Set' : '❌ Missing',
+    authDomain: firebaseConfig.authDomain || '❌ Missing',
+    projectId: firebaseConfig.projectId || '❌ Missing',
+    storageBucket: firebaseConfig.storageBucket ? '✅ Set' : '❌ Missing',
+    messagingSenderId: firebaseConfig.messagingSenderId ? '✅ Set' : '❌ Missing',
+    appId: firebaseConfig.appId ? '✅ Set' : '❌ Missing',
+  })
+}
+
+// Validate required configuration
+const requiredFields = ['apiKey', 'authDomain', 'projectId', 'appId']
+const missingFields = requiredFields.filter(field => !firebaseConfig[field as keyof typeof firebaseConfig])
+
+if (missingFields.length > 0) {
+  throw new Error(`Missing required Firebase configuration fields: ${missingFields.join(', ')}`)
+}
+
 // Initialize Firebase (singleton pattern to prevent multiple initializations)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
 
 // Initialize Firebase services
 export const auth: Auth = getAuth(app)
 export const db: Firestore = getFirestore(app)
-export const storage: FirebaseStorage = getStorage(app)
 
 // Export the app instance
 export default app

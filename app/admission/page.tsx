@@ -548,9 +548,9 @@ export default function AdmissionPredictionPage() {
       <div className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Welcome Message */}
-          <div className="mb-8 bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-200 dark:border-gray-800 shadow-sm animate-fadeInDown">
+          <div className="mb-8 bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-200 dark:border-gray-800 shadow-sm">
             <div className="flex items-center gap-3 mb-2">
-              <Brain className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+              <Brain className="h-8 w-8 text-gray-600 dark:text-gray-400" />
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Patient Admission Prediction</h1>
             </div>
             <p className="text-gray-600 dark:text-gray-400">
@@ -562,61 +562,61 @@ export default function AdmissionPredictionPage() {
           {loadingStats ? (
             <SkeletonStat />
           ) : stats ? (
-            <div className="bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-600 rounded-2xl p-8 mb-8 text-white shadow-xl animate-fadeInUp">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 mb-8 border border-gray-200 dark:border-gray-800 shadow-sm">
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-900 dark:text-white">
                 <BarChart3 className="h-7 w-7" />
                 Data Collection Status
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white/15 rounded-xl p-5 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
-                  <div className="text-4xl font-bold mb-1">{stats.total_days}</div>
-                  <div className="text-sm opacity-90 font-medium">Days Collected</div>
-                  <div className="mt-2 h-1 bg-white/30 rounded-full">
-                    <div className="h-full bg-white rounded-full" style={{width: `${Math.min((stats.total_days / 30) * 100, 100)}%`}}></div>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+                  <div className="text-4xl font-bold mb-1 text-gray-900 dark:text-white">{stats.total_days}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">Days Collected</div>
+                  <div className="mt-2 h-1 bg-gray-300 dark:bg-gray-600 rounded-full">
+                    <div className="h-full bg-gray-900 dark:bg-white rounded-full" style={{width: `${Math.min((stats.total_days / 30) * 100, 100)}%`}}></div>
                   </div>
                 </div>
-                <div className="bg-white/15 rounded-xl p-5 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
-                  <div className="text-4xl font-bold mb-1">{stats.avg_admissions}</div>
-                  <div className="text-sm opacity-90 font-medium">Avg per Day</div>
-                  <div className="text-xs opacity-75 mt-1">Daily Average</div>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+                  <div className="text-4xl font-bold mb-1 text-gray-900 dark:text-white">{stats.avg_admissions}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">Avg per Day</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">Daily Average</div>
                 </div>
-                <div className="bg-white/15 rounded-xl p-5 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
-                  <div className="text-4xl font-bold mb-1">{stats.max_admissions}</div>
-                  <div className="text-sm opacity-90 font-medium">Peak Day</div>
-                  <div className="text-xs opacity-75 mt-1">Highest Record</div>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+                  <div className="text-4xl font-bold mb-1 text-gray-900 dark:text-white">{stats.max_admissions}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">Peak Day</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">Highest Record</div>
                 </div>
-                <div className="bg-white/15 rounded-xl p-5 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-200 transform hover:scale-105">
-                  <div className="text-4xl font-bold mb-1">
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+                  <div className="text-4xl font-bold mb-1 text-gray-900 dark:text-white">
                     {stats.total_days >= 30 ? '✅' : `${30 - stats.total_days}`}
                   </div>
-                  <div className="text-sm opacity-90 font-medium">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
                     {stats.total_days >= 30 ? 'Ready!' : 'Days Left'}
                   </div>
-                  <div className="text-xs opacity-75 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                     {stats.total_days >= 30 ? 'Can Train Model' : 'Until Training'}
                   </div>
                 </div>
               </div>
               
               {stats.total_days < 30 ? (
-                <div className="mt-6 bg-white/20 rounded-xl p-5 backdrop-blur-sm border border-white/30 animate-pulse">
+                <div className="mt-6 bg-gray-100 dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">💡</span>
                     <div>
-                      <p className="font-semibold text-base mb-1">Keep collecting data!</p>
-                      <p className="text-sm opacity-90">
-                        You need <strong className="text-yellow-200">{30 - stats.total_days} more days</strong> of admission data before you can train the ML model. Keep entering daily records!
+                      <p className="font-semibold text-base mb-1 text-gray-900 dark:text-white">Keep collecting data!</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        You need <strong>{30 - stats.total_days} more days</strong> of admission data before you can train the ML model. Keep entering daily records!
                       </p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="mt-6 bg-emerald-500/30 rounded-xl p-5 backdrop-blur-sm border border-emerald-400/50">
+                <div className="mt-6 bg-gray-100 dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">🎉</span>
                     <div>
-                      <p className="font-semibold text-base mb-1">Excellent! Ready to train!</p>
-                      <p className="text-sm opacity-90">
+                      <p className="font-semibold text-base mb-1 text-gray-900 dark:text-white">Excellent! Ready to train!</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         You have collected enough data. Head to the <strong>&quot;Train Model&quot;</strong> tab to start training your ML model.
                       </p>
                     </div>
@@ -635,9 +635,9 @@ export default function AdmissionPredictionPage() {
                   role="tab"
                   aria-selected={activeTab === 'collect'}
                   aria-controls="collect-panel"
-                  className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 rounded-t-lg ${
+                  className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 rounded-t-lg ${
                     activeTab === 'collect'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400 transform scale-105'
+                      ? 'border-gray-900 dark:border-gray-300 text-gray-900 dark:text-white'
                       : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-700'
                   }`}
                 >
@@ -651,9 +651,9 @@ export default function AdmissionPredictionPage() {
                   role="tab"
                   aria-selected={activeTab === 'train'}
                   aria-controls="train-panel"
-                  className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 rounded-t-lg ${
+                  className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 rounded-t-lg ${
                     activeTab === 'train'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400 transform scale-105'
+                      ? 'border-gray-900 dark:border-gray-300 text-gray-900 dark:text-white'
                       : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-700'
                   }`}
                 >
@@ -667,9 +667,9 @@ export default function AdmissionPredictionPage() {
                   role="tab"
                   aria-selected={activeTab === 'predict'}
                   aria-controls="predict-panel"
-                  className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 rounded-t-lg ${
+                  className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 rounded-t-lg ${
                     activeTab === 'predict'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400 transform scale-105'
+                      ? 'border-gray-900 dark:border-gray-300 text-gray-900 dark:text-white'
                       : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-700'
                   }`}
                 >
@@ -683,9 +683,9 @@ export default function AdmissionPredictionPage() {
                   role="tab"
                   aria-selected={activeTab === 'history'}
                   aria-controls="history-panel"
-                  className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 rounded-t-lg ${
+                  className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950 rounded-t-lg ${
                     activeTab === 'history'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400 transform scale-105'
+                      ? 'border-gray-900 dark:border-gray-300 text-gray-900 dark:text-white'
                       : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-700'
                   }`}
                 >
@@ -704,7 +704,7 @@ export default function AdmissionPredictionPage() {
               id="collect-panel"
               role="tabpanel"
               aria-labelledby="collect-tab"
-              className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 shadow-sm animate-fadeInUp"
+              className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 shadow-sm"
             >
               <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Enter Daily Admission Data</h2>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
@@ -713,8 +713,8 @@ export default function AdmissionPredictionPage() {
 
               <form onSubmit={handleSaveData} className="space-y-6">
                 <div className="grid grid-cols-1 gap-6">
-                  <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-                    <label htmlFor="admission-date" className="block text-sm font-semibold mb-2 text-blue-900 dark:text-blue-300">
+                  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                    <label htmlFor="admission-date" className="block text-sm font-semibold mb-2 text-gray-900 dark:text-white">
                       📅 Date <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -723,7 +723,7 @@ export default function AdmissionPredictionPage() {
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
                       max={new Date().toISOString().split('T')[0]}
-                      className="w-full px-4 py-3 border-2 border-blue-300 dark:border-blue-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all font-medium"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-gray-500 dark:focus:border-gray-400 transition-all font-medium"
                       required
                       aria-required="true"
                     />
@@ -731,12 +731,12 @@ export default function AdmissionPredictionPage() {
 
                   <div>
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                      <Activity className="h-5 w-5 text-blue-500" />
+                      <Activity className="h-5 w-5 text-gray-500" />
                       Admission Counts
                     </h3>
                     <div className="grid md:grid-cols-2 gap-4">
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-                        <label htmlFor="total-admissions" className="block text-sm font-semibold mb-2 text-blue-900 dark:text-blue-300">
+                      <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                        <label htmlFor="total-admissions" className="block text-sm font-semibold mb-2 text-gray-900 dark:text-white">
                           📊 Total Admissions <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -746,14 +746,14 @@ export default function AdmissionPredictionPage() {
                           onChange={(e) => setTotalAdmissions(e.target.value)}
                           min="0"
                           placeholder="e.g., 145"
-                          className="w-full px-4 py-3 border-2 border-blue-300 dark:border-blue-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all text-lg font-bold"
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-gray-500 dark:focus:border-gray-400 transition-all text-lg font-bold"
                           required
                           aria-required="true"
                         />
                       </div>
 
-                      <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/10 dark:to-orange-900/10 border border-red-200 dark:border-red-800 rounded-xl p-4">
-                        <label htmlFor="emergency-admissions" className="block text-sm font-semibold mb-2 text-red-900 dark:text-red-300">
+                      <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                        <label htmlFor="emergency-admissions" className="block text-sm font-semibold mb-2 text-gray-900 dark:text-white">
                           🚨 Emergency Admissions
                         </label>
                         <input
@@ -763,12 +763,12 @@ export default function AdmissionPredictionPage() {
                           onChange={(e) => setEmergencyAdmissions(e.target.value)}
                           min="0"
                           placeholder="e.g., 45"
-                          className="w-full px-4 py-3 border-2 border-red-300 dark:border-red-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 dark:focus:ring-red-400 focus:border-red-500 dark:focus:border-red-400 transition-all font-semibold"
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-gray-500 dark:focus:border-gray-400 transition-all font-semibold"
                         />
                       </div>
 
-                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border border-green-200 dark:border-green-800 rounded-xl p-4">
-                        <label htmlFor="opd-admissions" className="block text-sm font-semibold mb-2 text-green-900 dark:text-green-300">
+                      <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                        <label htmlFor="opd-admissions" className="block text-sm font-semibold mb-2 text-gray-900 dark:text-white">
                           🏥 OPD Admissions
                         </label>
                         <input
@@ -778,12 +778,12 @@ export default function AdmissionPredictionPage() {
                           onChange={(e) => setOpdAdmissions(e.target.value)}
                           min="0"
                           placeholder="e.g., 85"
-                          className="w-full px-4 py-3 border-2 border-green-300 dark:border-green-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 dark:focus:border-green-400 transition-all font-semibold"
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-gray-500 dark:focus:border-gray-400 transition-all font-semibold"
                         />
                       </div>
 
-                      <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 border border-purple-200 dark:border-purple-800 rounded-xl p-4">
-                        <label htmlFor="scheduled-admissions" className="block text-sm font-semibold mb-2 text-purple-900 dark:text-purple-300">
+                      <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                        <label htmlFor="scheduled-admissions" className="block text-sm font-semibold mb-2 text-gray-900 dark:text-white">
                           📋 Scheduled Admissions
                         </label>
                         <input
@@ -793,22 +793,22 @@ export default function AdmissionPredictionPage() {
                           onChange={(e) => setScheduledAdmissions(e.target.value)}
                           min="0"
                           placeholder="e.g., 15"
-                          className="w-full px-4 py-3 border-2 border-purple-300 dark:border-purple-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:focus:border-purple-400 transition-all font-semibold"
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-gray-500 dark:focus:border-gray-400 transition-all font-semibold"
                         />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/10 dark:to-yellow-900/10 border-2 border-amber-200 dark:border-amber-800 rounded-xl p-4 hover:border-amber-300 dark:hover:border-amber-700 transition-colors">
+                <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-gray-300 dark:hover:border-gray-600 transition-colors">
                   <input
                     type="checkbox"
                     id="holiday"
                     checked={isHoliday}
                     onChange={(e) => setIsHoliday(e.target.checked)}
-                    className="w-5 h-5 text-amber-600 rounded focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                    className="w-5 h-5 text-gray-600 rounded focus:ring-2 focus:ring-gray-500 cursor-pointer"
                   />
-                  <label htmlFor="holiday" className="text-sm font-semibold text-amber-900 dark:text-amber-300 cursor-pointer flex items-center gap-2">
+                  <label htmlFor="holiday" className="text-sm font-semibold text-gray-900 dark:text-white cursor-pointer flex items-center gap-2">
                     🎉 This date is a public holiday
                   </label>
                 </div>
@@ -854,7 +854,7 @@ export default function AdmissionPredictionPage() {
               </p>
 
               {/* Auto-Training Toggle */}
-              <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-800 rounded-xl p-4 mb-6">
+              <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-gray-900 dark:text-white flex items-center">
@@ -874,7 +874,7 @@ export default function AdmissionPredictionPage() {
                     onClick={() => saveAutoTrainSettings(!autoTrainEnabled)}
                     className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
                       autoTrainEnabled
-                        ? 'bg-green-600 dark:bg-green-500'
+                        ? 'bg-gray-900 dark:bg-gray-300'
                         : 'bg-gray-300 dark:bg-gray-600'
                     }`}
                   >
@@ -888,8 +888,8 @@ export default function AdmissionPredictionPage() {
               </div>
 
               {modelTrained && (
-                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4 mb-6">
-                  <p className="text-green-800 dark:text-green-300 font-semibold flex items-center">
+                <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-6">
+                  <p className="text-gray-900 dark:text-white font-semibold flex items-center">
                     <Activity className="h-5 w-5 mr-2" />
                     ✅ Model is trained and ready for predictions!
                   </p>
@@ -897,29 +897,29 @@ export default function AdmissionPredictionPage() {
               )}
 
               {stats && stats.total_days < 30 && (
-                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6">
-                  <p className="text-amber-800 dark:text-amber-300 font-semibold">
+                <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-6">
+                  <p className="text-gray-900 dark:text-white font-semibold">
                     ⚠️ Need at least 30 days of data to train. You have {stats.total_days} days.
                   </p>
-                  <p className="text-sm mt-2 text-amber-700 dark:text-amber-400">Keep collecting data for {30 - stats.total_days} more days.</p>
+                  <p className="text-sm mt-2 text-gray-600 dark:text-gray-400">Keep collecting data for {30 - stats.total_days} more days.</p>
                 </div>
               )}
 
               {isTraining && (
-                <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+                <div className="mb-6 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
                   <div className="mb-2 flex justify-between items-center">
                     <span className="font-semibold text-gray-900 dark:text-white">Training Progress</span>
                     <span className="text-sm text-gray-600 dark:text-gray-400">{trainingProgress.toFixed(1)}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-4">
+                  <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3 mb-4">
                     <div
-                      className="bg-blue-600 dark:bg-blue-500 h-3 rounded-full transition-all duration-300"
+                      className="bg-gray-900 dark:bg-gray-300 h-3 rounded-full transition-all duration-300"
                       style={{ width: `${trainingProgress}%` }}
                     />
                   </div>
 
                   {trainingLogs && (
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
                           <span className="text-gray-600 dark:text-gray-400">Loss:</span>
@@ -949,7 +949,7 @@ export default function AdmissionPredictionPage() {
                 {isTraining ? '🔄 Training...' : 'Train ML Model (Manual)'}
               </button>
 
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+              <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6">
                 <h3 className="font-semibold mb-3 text-gray-900 dark:text-white flex items-center">
                   <Brain className="h-5 w-5 mr-2" />
                   About the Model
@@ -992,8 +992,8 @@ export default function AdmissionPredictionPage() {
           </p>
 
           {!modelTrained && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-6">
-              <p className="text-red-800 dark:text-red-300 font-semibold">
+            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 mb-6">
+              <p className="text-gray-900 dark:text-white font-semibold">
                 ❌ Model not trained yet. Please train the model first.
               </p>
             </div>
@@ -1001,14 +1001,14 @@ export default function AdmissionPredictionPage() {
 
           <div className="mb-6">
             <label htmlFor="days-ahead" className="block text-sm font-semibold mb-3 text-gray-900 dark:text-white flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-blue-500" />
+              <TrendingUp className="h-5 w-5 text-gray-500" />
               Prediction Timeframe
             </label>
             <select
               id="days-ahead"
               value={daysAhead}
               onChange={(e) => setDaysAhead(Number(e.target.value))}
-              className="w-full px-4 py-3.5 border-2 border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all font-medium text-base cursor-pointer hover:border-blue-400 dark:hover:border-blue-600"
+              className="w-full px-4 py-3.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-gray-500 dark:focus:border-gray-400 transition-all font-medium text-base cursor-pointer hover:border-gray-400 dark:hover:border-gray-500"
             >
               <option value={1}>📅 1 Day Ahead</option>
               <option value={3}>📅 3 Days Ahead</option>
@@ -1021,7 +1021,7 @@ export default function AdmissionPredictionPage() {
           <button
             onClick={handlePredict}
             disabled={!modelTrained || predicting}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:transform-none mb-6"
+            className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 py-4 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] disabled:transform-none mb-6"
             aria-label="Generate predictions"
           >
             {predicting ? (
@@ -1038,46 +1038,46 @@ export default function AdmissionPredictionPage() {
           {predictions.length > 0 && (
             <div className="space-y-5">
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                <BarChart3 className="h-6 w-6 text-emerald-500" />
+                <BarChart3 className="h-6 w-6 text-gray-500" />
                 📊 Prediction Results
               </h3>
               
               {predictions.map((pred, index) => (
-                <div key={index} className="bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 animate-fadeInUp" style={{animationDelay: `${index * 0.1}s`}}>
+                <div key={index} className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 mb-4">
                   <div className="flex justify-between items-start mb-5">
                     <div>
-                      <h4 className="text-2xl font-bold mb-1">
+                      <h4 className="text-2xl font-bold mb-1 text-gray-900 dark:text-white">
                         {new Date(pred.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                       </h4>
                       <div className="flex items-center gap-2">
-                        <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                          <p className="text-xs font-semibold">Confidence: {(pred.confidence * 100).toFixed(1)}%</p>
+                        <div className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700">
+                          <p className="text-xs font-semibold text-gray-900 dark:text-white">Confidence: {(pred.confidence * 100).toFixed(1)}%</p>
                         </div>
                       </div>
                     </div>
-                    <div className="text-right bg-white/20 backdrop-blur-sm rounded-2xl p-4 border border-white/30">
-                      <div className="text-5xl font-black mb-1">{pred.predicted_total}</div>
-                      <div className="text-xs opacity-90 font-medium">Total Predicted</div>
+                    <div className="text-right bg-gray-100 dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700">
+                      <div className="text-5xl font-black mb-1 text-gray-900 dark:text-white">{pred.predicted_total}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">Total Predicted</div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3 mb-4">
-                    <div className="bg-red-500/30 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                      <div className="text-3xl font-bold mb-1">{pred.predicted_emergency}</div>
-                      <div className="text-xs opacity-90 font-medium">🚨 Emergency</div>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                      <div className="text-3xl font-bold mb-1 text-gray-900 dark:text-white">{pred.predicted_emergency}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">🚨 Emergency</div>
                     </div>
-                    <div className="bg-green-500/30 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                      <div className="text-3xl font-bold mb-1">{pred.predicted_opd}</div>
-                      <div className="text-xs opacity-90 font-medium">🏥 OPD</div>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                      <div className="text-3xl font-bold mb-1 text-gray-900 dark:text-white">{pred.predicted_opd}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">🏥 OPD</div>
                     </div>
-                    <div className="bg-purple-500/30 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                      <div className="text-3xl font-bold mb-1">{pred.predicted_scheduled}</div>
-                      <div className="text-xs opacity-90 font-medium">📋 Scheduled</div>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                      <div className="text-3xl font-bold mb-1 text-gray-900 dark:text-white">{pred.predicted_scheduled}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">📋 Scheduled</div>
                     </div>
                   </div>
 
-                  <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4 border border-white/30">
-                    <div className="text-sm font-medium">
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
                       <strong>Confidence Interval:</strong> {pred.confidence_interval.min} - {pred.confidence_interval.max} patients
                     </div>
                   </div>
@@ -1094,7 +1094,7 @@ export default function AdmissionPredictionPage() {
           id="history-panel"
           role="tabpanel"
           aria-labelledby="history-tab"
-          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 shadow-sm animate-fadeInUp"
+          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 shadow-sm"
         >
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">

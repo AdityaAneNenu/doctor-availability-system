@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { db, storage } from '@/lib/firebase'
+import { db } from '@/lib/firebase'
 import { doc, updateDoc, query, collection, where, getDocs, limit } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import Link from 'next/link'
 import Image from 'next/image'
 import { User, Heart, ArrowLeft, Edit, X, Check, Mail, Phone, MapPin, Building2, Calendar, Users, Camera, Trash2 } from 'lucide-react'
@@ -146,29 +145,31 @@ function ProfileContent() {
     setError('')
 
     try {
-      // Create unique filename
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${user.uid}-${Date.now()}.${fileExt}`
-      const filePath = `avatars/${fileName}`
-
-      // Upload to Firebase Storage
-      const storageRef = ref(storage, filePath)
-      await uploadBytes(storageRef, file)
-
-      // Get download URL
-      const downloadURL = await getDownloadURL(storageRef)
-
-      // Update form data
-      setFormData(prev => ({
-        ...prev,
-        avatar_url: downloadURL
-      }))
-
-      setSuccess('Profile picture uploaded successfully!')
+      // Convert image to base64
+      const reader = new FileReader()
+      
+      reader.onloadend = () => {
+        const base64String = reader.result as string
+        
+        // Update form data with base64 image
+        setFormData(prev => ({
+          ...prev,
+          avatar_url: base64String
+        }))
+        
+        setSuccess('Profile picture uploaded successfully!')
+        setUploadingImage(false)
+      }
+      
+      reader.onerror = () => {
+        setError('Failed to read image file')
+        setUploadingImage(false)
+      }
+      
+      reader.readAsDataURL(file)
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to upload image'
       setError(errorMessage)
-    } finally {
       setUploadingImage(false)
     }
   }

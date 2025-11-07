@@ -357,9 +357,6 @@ function DashboardContent({ user, profile, signOut }: {
               <Link href="/admission" className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
                 Admission AI
               </Link>
-              <Link href="/validation" className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
-                ML Validation
-              </Link>
               <Link href="/about" className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">About</Link>
               <Link href="/contact" className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">Contact</Link>
               
@@ -702,86 +699,6 @@ function DashboardContent({ user, profile, signOut }: {
 
         {/* Disease Prediction & Doctor Insights Component */}
         <DashboardDoctorInsights onPinCodeAnalyzed={handlePinCodeAnalyzed} />
-
-        {/* System Accuracy Section */}
-        <div className="mb-12">
-          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">System Accuracy Validation</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Validated against 15 government health records
-                </p>
-              </div>
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* ML Model Accuracy */}
-              <div className="border-2 border-blue-200 dark:border-blue-900 rounded-lg p-6 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-gray-800">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">🤖 ML Model</h3>
-                  <span className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full">Neural Network</span>
-                </div>
-                <div className="text-5xl font-bold text-blue-600 dark:text-blue-400 mb-2">92.3%</div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Average Accuracy</p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Architecture:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">10→64→128→64→32→1</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Training:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">100 epochs</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Dataset:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">15 govt records</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Rule-Based System Accuracy */}
-              <div className="border-2 border-purple-200 dark:border-purple-900 rounded-lg p-6 bg-gradient-to-br from-purple-50 to-white dark:from-purple-950/20 dark:to-gray-800">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">⚙️ Rule-Based System</h3>
-                  <span className="px-3 py-1 bg-purple-600 text-white text-xs font-bold rounded-full">Our Current</span>
-                </div>
-                <div className="text-5xl font-bold text-purple-600 dark:text-purple-400 mb-2">89.7%</div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Average Accuracy</p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Method:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">Weather-based</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Scaling:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">Population factor</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Coverage:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">All city tiers</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Validation Summary */}
-            <div className="mt-6 p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900 rounded-lg">
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">✅</span>
-                <div>
-                  <p className="text-sm font-semibold text-green-900 dark:text-green-200 mb-1">
-                    Both systems validated against government ground truth data
-                  </p>
-                  <p className="text-sm text-green-800 dark:text-green-300">
-                    Tested across metro cities, tier-1, tier-2, and rural areas. Both approaches achieve high accuracy (&gt;89%), 
-                    demonstrating reliable doctor requirement predictions for hospital admission planning.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Hospital Cards */}
         <div className="mb-12">

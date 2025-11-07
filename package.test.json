@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "test:api": "ts-node lib/fetchGovtDataAPI.ts",
+    "test:csv": "ts-node lib/loadRealGovtData.ts"
+  }
+}

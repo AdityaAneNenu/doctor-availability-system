@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, User, Building2, Heart } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
+import FirebaseDebug from '@/components/FirebaseDebug'
 
 function AuthForm() {
   // Common fields
@@ -288,6 +289,14 @@ function AuthForm() {
           setError('Network error. Please check your connection.')
         } else if (error.message.includes('auth/unauthorized-domain')) {
           setError('This domain is not authorized for Google Sign-In. Please contact support.')
+        } else if (error.message.includes('auth/operation-not-allowed')) {
+          setError('Google Sign-In is not enabled. Please contact support.')
+        } else if (error.message.includes('auth/cancelled-popup-request')) {
+          setError('Sign-in popup was cancelled. Please try again.')
+        } else if (error.message.includes('auth/popup-blocked')) {
+          setError('Popup blocked by browser. Please allow popups and try again.')
+        } else if (error.message.includes('auth/internal-error')) {
+          setError('Internal authentication error. Please try again.')
         } else {
           setError(error.message || 'Google sign-in failed')
         }
@@ -849,6 +858,7 @@ export default function AuthPage() {
       <Suspense fallback={<div>Loading...</div>}>
         <AuthForm />
       </Suspense>
+      <FirebaseDebug />
     </div>
   )
 }
