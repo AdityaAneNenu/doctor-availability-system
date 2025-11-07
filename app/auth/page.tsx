@@ -235,6 +235,16 @@ function AuthForm() {
 
     try {
       const provider = new GoogleAuthProvider()
+      
+      // Add necessary scopes
+      provider.addScope('profile')
+      provider.addScope('email')
+      
+      // Set custom parameters
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      })
+      
       const result = await signInWithPopup(auth, provider)
       const user = result.user
       
@@ -267,8 +277,23 @@ function AuthForm() {
       }
     } catch (error: unknown) {
       console.error('Google Sign-In error:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Google sign-in failed'
-      setError(errorMessage)
+      
+      // Handle specific Firebase Auth errors
+      if (error instanceof Error) {
+        if (error.message.includes('popup-closed-by-user')) {
+          setError('Sign-in cancelled. Please try again.')
+        } else if (error.message.includes('popup-blocked')) {
+          setError('Popup was blocked. Please allow popups for this site.')
+        } else if (error.message.includes('network-request-failed')) {
+          setError('Network error. Please check your connection.')
+        } else if (error.message.includes('auth/unauthorized-domain')) {
+          setError('This domain is not authorized for Google Sign-In. Please contact support.')
+        } else {
+          setError(error.message || 'Google sign-in failed')
+        }
+      } else {
+        setError('Google sign-in failed. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
