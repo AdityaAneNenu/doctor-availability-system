@@ -67,6 +67,42 @@ const INDIAN_CITY_COORDINATES: Record<string, { latitude: number; longitude: num
 }
 
 /**
+ * Get estimated population factor based on city/district
+ * This scales doctor requirements based on urban density
+ */
+function getPopulationFactor(city: string, district: string): number {
+  // Metropolitan cities (High density) - 2.5x multiplier
+  const metroCities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad']
+  
+  // Tier-1 cities (Medium-high density) - 2.0x multiplier
+  const tier1Cities = ['Surat', 'Jaipur', 'Lucknow', 'Kanpur', 'Nagpur', 'Indore', 'Thane', 'Bhopal', 
+                       'Visakhapatnam', 'Patna', 'Vadodara', 'Ghaziabad', 'Ludhiana', 'Coimbatore']
+  
+  // Tier-2 cities (Medium density) - 1.5x multiplier
+  const tier2Cities = ['Madurai', 'Nashik', 'Faridabad', 'Rajkot', 'Meerut', 'Varanasi', 'Srinagar', 
+                       'Amritsar', 'Allahabad', 'Ranchi', 'Jabalpur', 'Gwalior', 'Vijayawada', 'Jodhpur']
+  
+  // Check city against tiers
+  const cityName = city.toLowerCase()
+  const districtName = district?.toLowerCase() || ''
+  
+  if (metroCities.some(c => cityName.includes(c.toLowerCase()) || districtName.includes(c.toLowerCase()))) {
+    return 2.5
+  }
+  
+  if (tier1Cities.some(c => cityName.includes(c.toLowerCase()) || districtName.includes(c.toLowerCase()))) {
+    return 2.0
+  }
+  
+  if (tier2Cities.some(c => cityName.includes(c.toLowerCase()) || districtName.includes(c.toLowerCase()))) {
+    return 1.5
+  }
+  
+  // Small towns/rural areas - 1.0x (base multiplier)
+  return 1.0
+}
+
+/**
  * State capital coordinates for fallback
  */
 const STATE_CAPITALS: Record<string, { latitude: number; longitude: number }> = {
@@ -232,13 +268,17 @@ export async function analyzeDiseaseByPinCode(pincode: string): Promise<{
     const diseases = predictDiseases(weather)
     console.log(`✅ Found ${diseases.length} potential disease risks`)
 
-    // Step 5: Calculate doctor requirements
+    // Step 5: Get population factor for this location
+    const populationFactor = getPopulationFactor(location.city, location.district)
+    console.log(`📊 Population factor for ${location.city}: ${populationFactor}x`)
+
+    // Step 6: Calculate doctor requirements with population scaling
     const doctorRequirements: DoctorRequirement[] = diseases.map(disease => ({
       id: `${location.pincode}-${disease.disease}`,
       city: location.city,
       predicted_disease: disease.disease,
       risk_level: disease.risk_level,
-      required_doctors: disease.required_doctors,
+      required_doctors: Math.ceil(disease.required_doctors * populationFactor),
       specialty: disease.specialty,
       generated_at: new Date().toISOString(),
     }))
@@ -248,8 +288,8 @@ export async function analyzeDiseaseByPinCode(pincode: string): Promise<{
       0
     )
 
-    // Step 6: Generate summary
-    const summary = generateSummary(location, weather, diseases, totalDoctorsRequired)
+    // Step 7: Generate summary
+    const summary = generateSummary(location, weather, diseases, totalDoctorsRequired, populationFactor)
 
     console.log(`✅ Analysis complete: ${totalDoctorsRequired} total doctors required`)
 
@@ -274,35 +314,49 @@ function generateSummary(
   location: PinCodeLocation,
   weather: WeatherData,
   diseases: DiseasePrediction[],
-  totalDoctors: number
+  totalDoctors: number,
+  populationFactor: number
 ): string {
   const highRisk = diseases.filter(d => d.risk_level >= 0.6)
   const mediumRisk = diseases.filter(d => d.risk_level >= 0.4 && d.risk_level < 0.6)
   
+  // Determine city type for context
+  let cityType = 'Rural/Small Town'
+  if (populationFactor >= 2.5) {
+    cityType = 'Metropolitan City'
+  } else if (populationFactor >= 2.0) {
+    cityType = 'Tier-1 City'
+  } else if (populationFactor >= 1.5) {
+    cityType = 'Tier-2 City'
+  }
+  
   let summary = `📍 Location: ${location.city}, ${location.state} (PIN: ${location.pincode})\n`
+  summary += `🏙️ Area Type: ${cityType} (Population Factor: ${populationFactor}x)\n`
   summary += `🌡️ Weather: ${weather.temperature.toFixed(1)}°C, ${weather.humidity.toFixed(0)}% humidity, ${weather.rainfall.toFixed(1)}mm rainfall\n\n`
   
   if (diseases.length === 0) {
     summary += `✅ Good news! No significant disease risks detected for current weather conditions.\n`
-    summary += `👨‍⚕️ Recommended: Maintain standard medical staffing (${totalDoctors} doctors)`
+    summary += `👨‍⚕️ Recommended: Maintain standard medical staffing for ${cityType}`
   } else {
     summary += `⚠️ Disease Risk Assessment:\n`
     
     if (highRisk.length > 0) {
       summary += `\n🔴 HIGH RISK (${highRisk.length}):\n`
       highRisk.forEach(d => {
-        summary += `   • ${d.disease}: ${(d.risk_level * 100).toFixed(0)}% risk - ${d.required_doctors} ${d.specialty} doctor(s) needed\n`
+        const scaledDoctors = Math.ceil(d.required_doctors * populationFactor)
+        summary += `   • ${d.disease}: ${(d.risk_level * 100).toFixed(0)}% risk - ${scaledDoctors} ${d.specialty} doctor(s) needed\n`
       })
     }
     
     if (mediumRisk.length > 0) {
       summary += `\n🟡 MEDIUM RISK (${mediumRisk.length}):\n`
       mediumRisk.forEach(d => {
-        summary += `   • ${d.disease}: ${(d.risk_level * 100).toFixed(0)}% risk - ${d.required_doctors} ${d.specialty} doctor(s) needed\n`
+        const scaledDoctors = Math.ceil(d.required_doctors * populationFactor)
+        summary += `   • ${d.disease}: ${(d.risk_level * 100).toFixed(0)}% risk - ${scaledDoctors} ${d.specialty} doctor(s) needed\n`
       })
     }
     
-    summary += `\n👨‍⚕️ Total Medical Staff Recommended: ${totalDoctors} specialized doctors`
+    summary += `\n👨‍⚕️ Total Medical Staff Recommended: ${totalDoctors} specialized doctors (scaled for ${cityType})`
   }
   
   return summary
