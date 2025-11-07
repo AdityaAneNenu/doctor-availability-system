@@ -255,7 +255,7 @@ export default function Home() {
               
               <div className="flex items-center space-x-8">
                 <div>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-white">5000+</div>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">300+</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">Beds Tracked</div>
                 </div>
                 <div className="w-px h-12 bg-gray-300 dark:bg-gray-700"></div>
@@ -516,7 +516,7 @@ export default function Home() {
               <div className="text-sm text-gray-600 dark:text-gray-400">System Uptime</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">500+</div>
+              <div className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">30+</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Partner Hospitals</div>
             </div>
             <div className="text-center">
@@ -524,7 +524,7 @@ export default function Home() {
               <div className="text-sm text-gray-600 dark:text-gray-400">Live Support</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">5000+</div>
+              <div className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">300+</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Beds Monitored</div>
             </div>
           </div>

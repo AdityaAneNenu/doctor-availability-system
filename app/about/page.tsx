@@ -343,11 +343,11 @@ export default function AboutPage() {
                 Saving Lives Through AI & Technology
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Our real-time tracking system combined with predictive AI has helped thousands of patients find the care they need quickly and efficiently.
+                Our real-time tracking system combined with predictive AI has helped hundreds of patients find the care they need quickly and efficiently across our network of 30+ partner hospitals.
               </p>
               <div className="bg-white dark:bg-gray-800 rounded-xl p-4 mt-6">
-                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">95%+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Prediction Accuracy</div>
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">300+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Beds Monitored</div>
               </div>
             </div>
           </div>
@@ -400,12 +400,12 @@ export default function AboutPage() {
 
           <div className="grid md:grid-cols-4 gap-8">
             <StatCard
-              number="50,000+"
+              number="15,000+"
               label="Patients Helped"
               description="People who found hospital beds through our platform"
             />
             <StatCard
-              number="200+"
+              number="30+"
               label="Partner Hospitals"
               description="Healthcare facilities using our tracking system"
             />
@@ -454,7 +454,7 @@ export default function AboutPage() {
             Experience AI-Powered Healthcare Management
           </h2>
           <p className="text-xl text-blue-100 dark:text-blue-200 mb-8">
-            Join hospitals using our ML-powered platform to predict admissions, optimize resources, and improve patient care
+            Join hospitals using our ML-powered platform to predict admissions, optimize resources, and improve patient care across 300+ monitored beds
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 

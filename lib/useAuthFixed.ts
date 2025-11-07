@@ -26,8 +26,9 @@ export function useAuth() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchProfile = useCallback(async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string, forceRefresh = false) => {
     try {
+      console.log(`Fetching profile for user: ${userId}, forceRefresh: ${forceRefresh}`)
       const profileRef = doc(db, 'profiles', userId)
       const profileSnap = await getDoc(profileRef)
 
@@ -44,6 +45,12 @@ export function useAuth() {
       setProfile(null)
     }
   }, [])
+
+  const refreshProfile = useCallback(async () => {
+    if (user) {
+      await fetchProfile(user.uid, true)
+    }
+  }, [user, fetchProfile])
 
   useEffect(() => {
     // Listen for auth state changes
@@ -92,6 +99,7 @@ export function useAuth() {
     profile,
     loading,
     signOut,
+    refreshProfile,
     isAuthenticated: !!user
   }
 }

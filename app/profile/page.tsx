@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { db } from '@/lib/firebase'
-import { doc, updateDoc, query, collection, where, getDocs, limit } from 'firebase/firestore'
+import { doc, updateDoc, query, collection, where, getDocs, limit, getDoc } from 'firebase/firestore'
 import Link from 'next/link'
 import Image from 'next/image'
 import { User, Heart, ArrowLeft, Edit, X, Check, Mail, Phone, MapPin, Building2, Calendar, Users, Camera, Trash2 } from 'lucide-react'
@@ -29,7 +29,7 @@ export default function ProfilePage() {
 }
 
 function ProfileContent() {
-  const { user, profile, loading: authLoading, signOut } = useAuth()
+  const { user, profile, loading: authLoading, signOut, refreshProfile } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -101,6 +101,10 @@ function ProfileContent() {
       }
       setFormData(profileData)
       setOriginalData(profileData)
+      
+      // Clear any previous messages when profile data changes
+      setError('')
+      setSuccess('')
       
       // If user is hospital admin and hospital_name is empty, fetch it from hospitals table
       if (profile.role === 'hospital_admin' && !profile.hospital_name && user) {
@@ -225,10 +229,8 @@ function ProfileContent() {
       setIsEditing(false)
       setSuccess('Profile updated successfully!')
       
-      // Refresh the page to get updated profile data
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
+      // Refresh profile data from the auth hook
+      await refreshProfile()
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update profile'
       setError(errorMessage)

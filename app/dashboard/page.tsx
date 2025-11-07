@@ -120,12 +120,9 @@ function DashboardContent({ user, profile, signOut }: {
     hospital_id: profile?.hospital_id,
     name: profile?.name 
   })
-  console.log('Dashboard - UserHospital:', userHospital)
 
   const loadUserHospital = useCallback(async () => {
     if (!profile?.hospital_id) return
-
-    console.log('Loading hospital for hospital_id:', profile.hospital_id)
 
     try {
       // Get hospital document from Firestore
@@ -138,17 +135,47 @@ function DashboardContent({ user, profile, signOut }: {
 
       const hospitalData = hospitalSnap.data()
 
+      // Extract the actual hospital ID from the document
+      // For hospital admins, the profile.hospital_id is like "userId_hospital"
+      // but the actual hospital document contains the real hospital ID
+      let actualHospitalId = hospitalData.id
+      
+      // If no ID field, try to extract from document name or use a default
+      if (!actualHospitalId) {
+        // Try to find the hospital ID from existing availability records
+        const allAvailabilitySnap = await getDocs(collection(db, 'availability'))
+        const adminAvailability = allAvailabilitySnap.docs.find(doc => {
+          const data = doc.data()
+          // Look for availability records that might be linked to this admin
+          return profile?.hospital_id && doc.id.includes(profile.hospital_id.split('_')[0])
+        })
+        
+        if (adminAvailability) {
+          actualHospitalId = adminAvailability.data().hospital_id
+        } else {
+          // Generate a new hospital ID based on existing hospitals
+          const allHospitalsSnap = await getDocs(collection(db, 'hospitals'))
+          const existingIds = allHospitalsSnap.docs.map(doc => {
+            const data = doc.data()
+            return data.id || parseInt(doc.id) || 0
+          }).filter(id => !isNaN(id))
+          actualHospitalId = Math.max(...existingIds, 0) + 1
+        }
+      }
+
       // Get availability data for this hospital
+      const hospitalIdNumber = parseInt(actualHospitalId.toString())
+      
       const availabilityQuery = query(
         collection(db, 'availability'),
-        where('hospital_id', '==', parseInt(profile.hospital_id)),
+        where('hospital_id', '==', hospitalIdNumber),
         orderBy('updated_at', 'desc'),
         limit(1)
       )
       const availabilitySnap = await getDocs(availabilityQuery)
 
       const hospital: Hospital = {
-        id: hospitalData.id || parseInt(hospitalSnap.id),
+        id: hospitalIdNumber,
         name: hospitalData.name,
         address: hospitalData.address,
         phone_number: hospitalData.phone,
@@ -157,11 +184,10 @@ function DashboardContent({ user, profile, signOut }: {
         availability: availabilitySnap.empty ? [] : [{
           available_beds: availabilitySnap.docs[0].data().available_beds || 0,
           available_oxygen: availabilitySnap.docs[0].data().available_oxygen || 0,
-          last_updated: availabilitySnap.docs[0].data().updated_at?.toDate().toLocaleString() || ''
+          last_updated: availabilitySnap.docs[0].data().updated_at?.toDate?.()?.toLocaleString() || ''
         }]
       }
 
-      console.log('Loaded hospital data:', hospital)
       setUserHospital(hospital)
       setSelectedHospital(hospital.id.toString())
       
@@ -192,7 +218,18 @@ function DashboardContent({ user, profile, signOut }: {
       
       availabilitySnap.docs.forEach(doc => {
         const data = doc.data()
-        const hospitalId = data.hospital_id
+        let hospitalId = data.hospital_id
+        
+        // Convert string hospital ID to number if needed
+        if (typeof hospitalId === 'string') {
+          hospitalId = parseInt(hospitalId)
+        }
+        
+        // Skip records with invalid hospital IDs
+        if (isNaN(hospitalId) || hospitalId === null || hospitalId === undefined) {
+          return
+        }
+        
         if (!availabilityMap.has(hospitalId) || 
             data.updated_at > availabilityMap.get(hospitalId).updated_at) {
           availabilityMap.set(hospitalId, data)
@@ -202,10 +239,16 @@ function DashboardContent({ user, profile, signOut }: {
       // Combine hospitals with availability
       const hospitals: Hospital[] = hospitalsSnap.docs.map(doc => {
         const data = doc.data()
-        const hospitalId = data.id || parseInt(doc.id)
+        let hospitalId = data.id || parseInt(doc.id)
+        
+        // Ensure hospital ID is a number
+        if (typeof hospitalId === 'string') {
+          hospitalId = parseInt(hospitalId)
+        }
+        
         const availData = availabilityMap.get(hospitalId)
         
-        return {
+        const hospital = {
           id: hospitalId,
           name: data.name,
           address: data.address,
@@ -216,12 +259,13 @@ function DashboardContent({ user, profile, signOut }: {
           availability: availData ? [{
             available_beds: availData.available_beds || 0,
             available_oxygen: availData.available_oxygen || 0,
-            last_updated: availData.updated_at?.toDate().toLocaleString() || ''
+            last_updated: availData.updated_at?.toDate?.()?.toLocaleString() || ''
           }] : []
         }
+        
+        return hospital
       })
 
-      console.log('Loaded hospitals data:', hospitals)
       setHospitals(hospitals)
       setFilteredHospitals(hospitals) // Initialize with all hospitals
     } catch (error: unknown) {
@@ -232,7 +276,7 @@ function DashboardContent({ user, profile, signOut }: {
     }
   }, [])
 
-  // ADD BACK THE UPDATE AVAILABILITY FUNCTION
+  // UPDATE AVAILABILITY FUNCTION
   const updateAvailability = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -255,8 +299,9 @@ function DashboardContent({ user, profile, signOut }: {
         available_oxygen: parseInt(oxygen),
         updated_at: Timestamp.now()
       })
-
+      
       // Reload data
+      setLoading(true)
       await loadHospitals()
       if (profile?.role === 'hospital_admin') {
         await loadUserHospital()
@@ -268,6 +313,22 @@ function DashboardContent({ user, profile, signOut }: {
       setError('Failed to update availability')
     } finally {
       setUpdateLoading(false)
+    }
+  }
+
+  // Force refresh function
+  const forceRefresh = async () => {
+    setLoading(true)
+    setError('')
+    
+    try {
+      await loadHospitals()
+      if (profile?.role === 'hospital_admin' && profile?.hospital_id) {
+        await loadUserHospital()
+      }
+    } catch (error) {
+      console.error('Force refresh failed:', error)
+      setError('Failed to refresh data')
     }
   }
 
@@ -720,11 +781,12 @@ function DashboardContent({ user, profile, signOut }: {
                 </button>
               )}
               <button
-                onClick={loadHospitals}
-                className="flex items-center space-x-2 px-4 py-2 text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-sm"
+                onClick={forceRefresh}
+                disabled={loading}
+                className="flex items-center space-x-2 px-4 py-2 text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-50 transition-all shadow-sm"
               >
-                <RefreshCw className="h-4 w-4" />
-                <span>Refresh</span>
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
               </button>
             </div>
           </div>
@@ -754,9 +816,12 @@ function DashboardContent({ user, profile, signOut }: {
                 const avail = hospital.availability?.[0]
                 const beds = avail?.available_beds || 0
                 const oxygen = avail?.available_oxygen || 0
+                
+                // Generate a unique key that handles NaN IDs
+                const hospitalKey = isNaN(hospital.id) ? `hospital-${Math.random()}` : `hospital-${hospital.id}`
 
                 return (
-                <div key={hospital.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-md transition-shadow">
+                <div key={hospitalKey} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-4">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">{hospital.name}</h3>
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(beds)}`}>
