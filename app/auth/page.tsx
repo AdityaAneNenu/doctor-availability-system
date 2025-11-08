@@ -64,12 +64,12 @@ function AuthForm() {
     if (errorMessage.includes('auth/invalid-credential') || errorMessage.includes('auth/wrong-password')) {
       // Check if there's a hint that this might be a Google account
       if (errorMessage.includes('hint') && errorMessage.includes('google')) {
-        return '❌ This email is linked to Google Sign-In. Please use the "Continue with Google" button above instead.'
+        return '❌ Invalid Username / Password'
       }
-      return '❌ Invalid email or password'
+      return '❌ Invalid Username / Password'
     }
     if (errorMessage.includes('auth/user-not-found')) {
-      return '❌ No account found with this email'
+      return '❌ Invalid Username / Password'
     }
     if (errorMessage.includes('auth/email-already-in-use')) {
       return '❌ This email is already registered'
