@@ -102,7 +102,7 @@ export default function Home() {
                 </div>
               ) : (
                 <Link href="/auth" className="ml-2 px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-sm hover:shadow-md transition-all">
-                  Get Started
+                  Sign In
                 </Link>
               )}
             </nav>
@@ -200,7 +200,7 @@ export default function Home() {
                     className="block text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 py-2.5 px-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-sm text-center transition-all"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Get Started
+                    Sign In
                   </Link>
                 </div>
               )}
@@ -238,10 +238,10 @@ export default function Home() {
               
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
                 <Link 
-                  href="/auth"
+                  href={isAuthenticated ? "/dashboard" : "/auth"}
                   className="inline-flex items-center justify-center px-6 py-3.5 text-base font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl"
                 >
-                  Get Started
+                  {isAuthenticated ? "Go to Dashboard" : "Get Started"}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
                 <Link 
@@ -498,8 +498,8 @@ export default function Home() {
               <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
                 Find nearby hospitals with available resources using PIN code-based filtering and smart matching.
               </p>
-              <Link href="/contact" className="inline-flex items-center text-rose-600 dark:text-rose-400 font-medium hover:gap-2 transition-all">
-                Get Started <ArrowRight className="h-4 w-4 ml-1" />
+              <Link href={isAuthenticated ? "/dashboard" : "/auth"} className="inline-flex items-center text-rose-600 dark:text-rose-400 font-medium hover:gap-2 transition-all">
+                {isAuthenticated ? "View Dashboard" : "Get Started"} <ArrowRight className="h-4 w-4 ml-1" />
               </Link>
             </div>
           </div>
@@ -541,10 +541,10 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
-              href="/auth"
+              href={isAuthenticated ? "/dashboard" : "/auth"}
               className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl"
             >
-              Get Started Free
+              {isAuthenticated ? "Go to Dashboard" : "Get Started Free"}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <Link 
