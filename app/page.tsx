@@ -36,7 +36,6 @@ export default function Home() {
 
   // If user is authenticated and has a profile, show a dashboard redirect message for mobile
   // but don't force redirect to let them choose
-  const showMobileDashboardLink = isAuthenticated && profile
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
       {/* Header */}

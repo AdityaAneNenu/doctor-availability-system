@@ -143,12 +143,11 @@ function DashboardContent({ user, profile, signOut }: {
       console.log('Hospital data loaded:', hospitalData)
 
       // Extract the actual hospital ID from the document
-      let actualHospitalId = hospitalData.id || profile.hospital_id
+      const actualHospitalId = hospitalData.id || profile.hospital_id
       
       console.log('Actual hospital ID:', actualHospitalId, 'Type:', typeof actualHospitalId)
 
       // Get availability data for this hospital - use string comparison
-      const hospitalIdKey = String(actualHospitalId)
       
       const availabilityQuery = query(
         collection(db, 'availability'),
@@ -210,7 +209,7 @@ function DashboardContent({ user, profile, signOut }: {
       
       availabilitySnap.docs.forEach(doc => {
         const data = doc.data()
-        let hospitalId = data.hospital_id
+        const hospitalId = data.hospital_id
         
         console.log('Availability record:', {
           docId: doc.id,
@@ -244,7 +243,7 @@ function DashboardContent({ user, profile, signOut }: {
       // Combine hospitals with availability
       const hospitals: Hospital[] = hospitalsSnap.docs.map(doc => {
         const data = doc.data()
-        let hospitalId = data.id || doc.id
+        const hospitalId = data.id || doc.id
         
         // Keep hospital ID as string or number, don't force conversion
         const hospitalIdKey = String(hospitalId)

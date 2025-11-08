@@ -621,7 +621,7 @@ function AuthForm() {
                     />
                     {!isGoogleAuth && !isSignUp && (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        💡 Tip: If you signed up with Google, use "Continue with Google" button
+                        💡 Tip: If you signed up with Google, use &quot;Continue with Google&quot; button
                       </p>
                     )}
                   </div>

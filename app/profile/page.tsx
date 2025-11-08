@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { db } from '@/lib/firebase'
-import { doc, updateDoc, query, collection, where, getDocs, limit, getDoc } from 'firebase/firestore'
+import { doc, updateDoc, query, collection, where, getDocs, limit } from 'firebase/firestore'
 import Link from 'next/link'
 import Image from 'next/image'
 import { User, Heart, ArrowLeft, Edit, X, Check, Mail, Phone, MapPin, Building2, Calendar, Users, Camera, Trash2 } from 'lucide-react'
