@@ -26,7 +26,7 @@ interface Profile {
 }
 
 interface Hospital {
-  id: number
+  id: number | string  // Allow both number and string IDs
   name: string
   address: string
   phone_number?: string
@@ -122,7 +122,12 @@ function DashboardContent({ user, profile, signOut }: {
   })
 
   const loadUserHospital = useCallback(async () => {
-    if (!profile?.hospital_id) return
+    if (!profile?.hospital_id) {
+      console.log('No hospital_id in profile')
+      return
+    }
+
+    console.log('Loading hospital for admin, hospital_id:', profile.hospital_id)
 
     try {
       // Get hospital document from Firestore
@@ -130,52 +135,33 @@ function DashboardContent({ user, profile, signOut }: {
       const hospitalSnap = await getDoc(hospitalRef)
 
       if (!hospitalSnap.exists()) {
+        console.error('Hospital document not found:', profile.hospital_id)
         throw new Error('Hospital not found')
       }
 
       const hospitalData = hospitalSnap.data()
+      console.log('Hospital data loaded:', hospitalData)
 
       // Extract the actual hospital ID from the document
-      // For hospital admins, the profile.hospital_id is like "userId_hospital"
-      // but the actual hospital document contains the real hospital ID
-      let actualHospitalId = hospitalData.id
+      let actualHospitalId = hospitalData.id || profile.hospital_id
       
-      // If no ID field, try to extract from document name or use a default
-      if (!actualHospitalId) {
-        // Try to find the hospital ID from existing availability records
-        const allAvailabilitySnap = await getDocs(collection(db, 'availability'))
-        const adminAvailability = allAvailabilitySnap.docs.find(doc => {
-          const data = doc.data()
-          // Look for availability records that might be linked to this admin
-          return profile?.hospital_id && doc.id.includes(profile.hospital_id.split('_')[0])
-        })
-        
-        if (adminAvailability) {
-          actualHospitalId = adminAvailability.data().hospital_id
-        } else {
-          // Generate a new hospital ID based on existing hospitals
-          const allHospitalsSnap = await getDocs(collection(db, 'hospitals'))
-          const existingIds = allHospitalsSnap.docs.map(doc => {
-            const data = doc.data()
-            return data.id || parseInt(doc.id) || 0
-          }).filter(id => !isNaN(id))
-          actualHospitalId = Math.max(...existingIds, 0) + 1
-        }
-      }
+      console.log('Actual hospital ID:', actualHospitalId, 'Type:', typeof actualHospitalId)
 
-      // Get availability data for this hospital
-      const hospitalIdNumber = parseInt(actualHospitalId.toString())
+      // Get availability data for this hospital - use string comparison
+      const hospitalIdKey = String(actualHospitalId)
       
       const availabilityQuery = query(
         collection(db, 'availability'),
-        where('hospital_id', '==', hospitalIdNumber),
+        where('hospital_id', '==', actualHospitalId),  // Use original ID type
         orderBy('updated_at', 'desc'),
         limit(1)
       )
       const availabilitySnap = await getDocs(availabilityQuery)
 
+      console.log('Availability records found:', availabilitySnap.size)
+
       const hospital: Hospital = {
-        id: hospitalIdNumber,
+        id: actualHospitalId,  // Keep as string if it's a string
         name: hospitalData.name,
         address: hospitalData.address,
         phone_number: hospitalData.phone,
@@ -187,6 +173,8 @@ function DashboardContent({ user, profile, signOut }: {
           last_updated: availabilitySnap.docs[0].data().updated_at?.toDate?.()?.toLocaleString() || ''
         }]
       }
+
+      console.log('User hospital loaded:', hospital)
 
       setUserHospital(hospital)
       setSelectedHospital(hospital.id.toString())
@@ -203,6 +191,7 @@ function DashboardContent({ user, profile, signOut }: {
   }, [profile?.hospital_id])
 
   const loadHospitals = useCallback(async () => {
+    console.log('=== LOADING HOSPITALS ===')
     try {
       // Get all hospitals from Firestore
       const hospitalsQuery = query(
@@ -211,45 +200,59 @@ function DashboardContent({ user, profile, signOut }: {
       )
       
       const hospitalsSnap = await getDocs(hospitalsQuery)
+      console.log('Hospitals found:', hospitalsSnap.size)
       
       // Get all availability data
       const availabilitySnap = await getDocs(collection(db, 'availability'))
+      console.log('Total availability records:', availabilitySnap.size)
+      
       const availabilityMap = new Map()
       
       availabilitySnap.docs.forEach(doc => {
         const data = doc.data()
         let hospitalId = data.hospital_id
         
-        // Convert string hospital ID to number if needed
-        if (typeof hospitalId === 'string') {
-          hospitalId = parseInt(hospitalId)
-        }
+        console.log('Availability record:', {
+          docId: doc.id,
+          hospitalId: hospitalId,
+          hospitalIdType: typeof hospitalId,
+          beds: data.available_beds,
+          oxygen: data.available_oxygen,
+          updated: data.updated_at?.toDate?.()?.toLocaleString()
+        })
         
-        // Skip records with invalid hospital IDs
-        if (isNaN(hospitalId) || hospitalId === null || hospitalId === undefined) {
+        // Keep hospital ID as-is, don't convert to number
+        // Skip only if undefined or null
+        if (hospitalId === null || hospitalId === undefined) {
+          console.warn('Skipping invalid hospital ID:', hospitalId)
           return
         }
         
-        if (!availabilityMap.has(hospitalId) || 
-            data.updated_at > availabilityMap.get(hospitalId).updated_at) {
-          availabilityMap.set(hospitalId, data)
+        // Convert to string for consistent comparison
+        const hospitalIdKey = String(hospitalId)
+        
+        // Keep only the most recent record for each hospital
+        if (!availabilityMap.has(hospitalIdKey) || 
+            data.updated_at > availabilityMap.get(hospitalIdKey).updated_at) {
+          availabilityMap.set(hospitalIdKey, data)
         }
       })
+      
+      console.log('Availability map size:', availabilityMap.size)
+      console.log('Availability map entries:', Array.from(availabilityMap.entries()))
       
       // Combine hospitals with availability
       const hospitals: Hospital[] = hospitalsSnap.docs.map(doc => {
         const data = doc.data()
-        let hospitalId = data.id || parseInt(doc.id)
+        let hospitalId = data.id || doc.id
         
-        // Ensure hospital ID is a number
-        if (typeof hospitalId === 'string') {
-          hospitalId = parseInt(hospitalId)
-        }
+        // Keep hospital ID as string or number, don't force conversion
+        const hospitalIdKey = String(hospitalId)
         
-        const availData = availabilityMap.get(hospitalId)
+        const availData = availabilityMap.get(hospitalIdKey)
         
         const hospital = {
-          id: hospitalId,
+          id: hospitalId,  // Keep original type
           name: data.name,
           address: data.address,
           phone_number: data.phone,
@@ -263,8 +266,21 @@ function DashboardContent({ user, profile, signOut }: {
           }] : []
         }
         
+        console.log('Hospital processed:', {
+          id: hospital.id,
+          idType: typeof hospital.id,
+          name: hospital.name,
+          beds: hospital.availability[0]?.available_beds || 0,
+          oxygen: hospital.availability[0]?.available_oxygen || 0,
+          hasAvailability: !!availData
+        })
+        
         return hospital
       })
+
+      console.log('Total hospitals loaded:', hospitals.length)
+      console.log('Total beds across all hospitals:', hospitals.reduce((sum, h) => sum + (h.availability?.[0]?.available_beds || 0), 0))
+      console.log('Total oxygen across all hospitals:', hospitals.reduce((sum, h) => sum + (h.availability?.[0]?.available_oxygen || 0), 0))
 
       setHospitals(hospitals)
       setFilteredHospitals(hospitals) // Initialize with all hospitals
@@ -289,28 +305,72 @@ function DashboardContent({ user, profile, signOut }: {
     setError('')
 
     try {
-      const hospitalId = parseInt(selectedHospital)
+      // Keep hospital ID as-is (don't force number conversion)
+      const hospitalId = selectedHospital
+      
+      console.log('=== UPDATING AVAILABILITY ===')
+      console.log('Hospital ID:', hospitalId, 'Type:', typeof hospitalId)
+      console.log('Beds:', beds)
+      console.log('Oxygen:', oxygen)
+      
+      // Verify the hospital exists
+      const hospitalRef = doc(db, 'hospitals', profile?.hospital_id || selectedHospital)
+      const hospitalSnap = await getDoc(hospitalRef)
+      
+      if (hospitalSnap.exists()) {
+        console.log('Hospital exists:', hospitalSnap.data().name)
+      } else {
+        console.warn('Hospital document not found!')
+      }
       
       // Create or update availability document
-      const availabilityRef = doc(db, 'availability', `${hospitalId}_${Date.now()}`)
-      await setDoc(availabilityRef, {
-        hospital_id: hospitalId,
+      const availabilityDocId = `${hospitalId}_${Date.now()}`
+      const availabilityRef = doc(db, 'availability', availabilityDocId)
+      
+      const availabilityData = {
+        hospital_id: hospitalId,  // Use original ID (string or number)
         available_beds: parseInt(beds),
         available_oxygen: parseInt(oxygen),
         updated_at: Timestamp.now()
-      })
+      }
       
-      // Reload data
+      console.log('Creating availability document:', availabilityDocId)
+      console.log('Availability data:', availabilityData)
+      
+      await setDoc(availabilityRef, availabilityData)
+      
+      console.log('✅ Availability document created successfully!')
+      
+      // Verify the document was created
+      const verifySnap = await getDoc(availabilityRef)
+      if (verifySnap.exists()) {
+        console.log('✅ Verified: Document exists in Firestore')
+        console.log('Document data:', verifySnap.data())
+      } else {
+        console.error('❌ Document creation failed!')
+      }
+      
+      // Force reload data with a small delay to ensure Firestore has synced
+      console.log('Waiting for Firestore sync...')
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      console.log('Reloading hospitals data...')
       setLoading(true)
       await loadHospitals()
+      
       if (profile?.role === 'hospital_admin') {
+        console.log('Reloading user hospital...')
         await loadUserHospital()
       }
+      
+      setLoading(false)
+      console.log('=== UPDATE COMPLETE ===')
 
-      alert('Availability updated successfully!')
+      alert('✅ Availability updated successfully! Check the dashboard for updated numbers.')
     } catch (error: unknown) {
-      console.error('Error updating availability:', error)
-      setError('Failed to update availability')
+      console.error('❌ Error updating availability:', error)
+      setError('Failed to update availability. Please try again.')
+      alert('❌ Failed to update availability: ' + (error instanceof Error ? error.message : 'Unknown error'))
     } finally {
       setUpdateLoading(false)
     }
@@ -812,13 +872,14 @@ function DashboardContent({ user, profile, signOut }: {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredHospitals.map((hospital) => {
+              {filteredHospitals.map((hospital, index) => {
                 const avail = hospital.availability?.[0]
                 const beds = avail?.available_beds || 0
                 const oxygen = avail?.available_oxygen || 0
                 
-                // Generate a unique key that handles NaN IDs
-                const hospitalKey = isNaN(hospital.id) ? `hospital-${Math.random()}` : `hospital-${hospital.id}`
+                // Generate a truly unique key using index, ID, and sanitized name
+                const sanitizedName = hospital.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '')
+                const hospitalKey = `hospital-${String(hospital.id)}-${index}-${sanitizedName}`
 
                 return (
                 <div key={hospitalKey} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-md transition-shadow">

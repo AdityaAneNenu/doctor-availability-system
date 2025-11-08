@@ -13,7 +13,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, User, Building2, Heart } from 'lucide-react'
 import ThemeToggle from '@/components/ThemeToggle'
-import FirebaseDebug from '@/components/FirebaseDebug'
 
 function AuthForm() {
   // Common fields
@@ -52,6 +51,91 @@ function AuthForm() {
   
   const router = useRouter()
   const searchParams = useSearchParams()
+
+  // Convert Firebase error codes to user-friendly messages
+  const getFirebaseErrorMessage = (error: unknown): string => {
+    if (!(error instanceof Error)) {
+      return 'An unexpected error occurred. Please try again.'
+    }
+
+    const errorMessage = error.message.toLowerCase()
+
+    // Authentication errors
+    if (errorMessage.includes('auth/invalid-credential') || errorMessage.includes('auth/wrong-password')) {
+      // Check if there's a hint that this might be a Google account
+      if (errorMessage.includes('hint') && errorMessage.includes('google')) {
+        return '❌ This email is linked to Google Sign-In. Please use the "Continue with Google" button above instead.'
+      }
+      return '❌ Invalid email or password'
+    }
+    if (errorMessage.includes('auth/user-not-found')) {
+      return '❌ No account found with this email'
+    }
+    if (errorMessage.includes('auth/email-already-in-use')) {
+      return '❌ This email is already registered'
+    }
+    if (errorMessage.includes('auth/invalid-email')) {
+      return '❌ Invalid email address'
+    }
+    if (errorMessage.includes('auth/weak-password')) {
+      return '❌ Password must be at least 6 characters'
+    }
+    if (errorMessage.includes('auth/too-many-requests')) {
+      return '❌ Too many failed attempts. Try again later'
+    }
+    if (errorMessage.includes('auth/network-request-failed')) {
+      return '❌ Network error. Check your connection'
+    }
+    if (errorMessage.includes('auth/operation-not-allowed')) {
+      return '❌ Authentication method not enabled'
+    }
+    if (errorMessage.includes('auth/requires-recent-login')) {
+      return '❌ Please sign in again'
+    }
+
+    // Google Sign-In errors
+    if (errorMessage.includes('popup-closed-by-user')) {
+      return '❌ Sign-in cancelled'
+    }
+    if (errorMessage.includes('popup-blocked')) {
+      return '❌ Popup blocked. Please allow popups'
+    }
+    if (errorMessage.includes('auth/unauthorized-domain')) {
+      return '❌ Domain not authorized'
+    }
+    if (errorMessage.includes('auth/cancelled-popup-request')) {
+      return '❌ Sign-in cancelled'
+    }
+
+    // Validation errors (from our code)
+    if (errorMessage.includes('name is required')) {
+      return '❌ Name is required'
+    }
+    if (errorMessage.includes('age')) {
+      return '❌ Invalid age'
+    }
+    if (errorMessage.includes('select your sex')) {
+      return '❌ Please select gender'
+    }
+    if (errorMessage.includes('hospital name is required')) {
+      return '❌ Hospital name is required'
+    }
+    if (errorMessage.includes('address')) {
+      return '❌ Complete address required'
+    }
+    if (errorMessage.includes('pin code')) {
+      return '❌ Valid PIN code required'
+    }
+    if (errorMessage.includes('phone number')) {
+      return '❌ Valid phone number required'
+    }
+    if (errorMessage.includes('select user type')) {
+      return '❌ Please select account type'
+    }
+
+    // Default fallback
+    return `❌ ${error.message}`
+  }
 
   useEffect(() => {
     const mode = searchParams.get('mode')
@@ -122,6 +206,9 @@ function AuthForm() {
       if (isSignUp) {
         if (!userType) throw new Error('Please select user type')
         
+        // Normalize email (trim and lowercase)
+        const normalizedEmail = email.trim().toLowerCase()
+        
         // Validate based on user type
         if (userType === 'patient') {
           validatePatientForm()
@@ -134,7 +221,7 @@ function AuthForm() {
         
         if (!isGoogleAuth) {
           // Create Firebase auth user only for email/password signup
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+          const userCredential = await createUserWithEmailAndPassword(auth, normalizedEmail, password)
           userId = userCredential.user.uid
         }
         
@@ -145,7 +232,7 @@ function AuthForm() {
           // Handle patient registration
           const profileData = {
             id: userId,
-            email: email,
+            email: normalizedEmail,
             name: patientName.trim(),
             age: parseInt(age),
             sex: sex,
@@ -187,7 +274,7 @@ function AuthForm() {
             // Create admin profile with hospital reference
             await setDoc(doc(db, 'profiles', userId), {
               id: userId,
-              email: email,
+              email: normalizedEmail,
               name: adminName.trim(),
               age: 0,
               sex: 'other',
@@ -218,12 +305,31 @@ function AuthForm() {
         }
       } else {
         // Sign in with Firebase
-        await signInWithEmailAndPassword(auth, email, password)
-        router.push('/')
+        // Trim whitespace from email and password
+        const trimmedEmail = email.trim().toLowerCase()
+        const trimmedPassword = password
+        
+        console.log('Attempting sign in with email:', trimmedEmail)
+        
+        try {
+          await signInWithEmailAndPassword(auth, trimmedEmail, trimmedPassword)
+          router.push('/')
+        } catch (signInError: unknown) {
+          // Check if the error is because account was created with Google
+          if (signInError instanceof Error && 
+              (signInError.message.includes('auth/invalid-credential') || 
+               signInError.message.includes('auth/wrong-password'))) {
+            // Try to provide more helpful error message
+            console.error('Sign-in failed. This might be a Google-linked account.')
+            throw new Error('auth/invalid-credential-hint: This email might be linked to Google Sign-In. Try "Continue with Google" instead, or verify your password.')
+          }
+          throw signInError
+        }
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Authentication failed'
-      setError(errorMessage)
+      const friendlyErrorMessage = getFirebaseErrorMessage(error)
+      setError(friendlyErrorMessage)
+      console.error('Authentication error:', error)
     } finally {
       setLoading(false)
     }
@@ -278,31 +384,8 @@ function AuthForm() {
       }
     } catch (error: unknown) {
       console.error('Google Sign-In error:', error)
-      
-      // Handle specific Firebase Auth errors
-      if (error instanceof Error) {
-        if (error.message.includes('popup-closed-by-user')) {
-          setError('Sign-in cancelled. Please try again.')
-        } else if (error.message.includes('popup-blocked')) {
-          setError('Popup was blocked. Please allow popups for this site.')
-        } else if (error.message.includes('network-request-failed')) {
-          setError('Network error. Please check your connection.')
-        } else if (error.message.includes('auth/unauthorized-domain')) {
-          setError('This domain is not authorized for Google Sign-In. Please contact support.')
-        } else if (error.message.includes('auth/operation-not-allowed')) {
-          setError('Google Sign-In is not enabled. Please contact support.')
-        } else if (error.message.includes('auth/cancelled-popup-request')) {
-          setError('Sign-in popup was cancelled. Please try again.')
-        } else if (error.message.includes('auth/popup-blocked')) {
-          setError('Popup blocked by browser. Please allow popups and try again.')
-        } else if (error.message.includes('auth/internal-error')) {
-          setError('Internal authentication error. Please try again.')
-        } else {
-          setError(error.message || 'Google sign-in failed')
-        }
-      } else {
-        setError('Google sign-in failed. Please try again.')
-      }
+      const friendlyErrorMessage = getFirebaseErrorMessage(error)
+      setError(friendlyErrorMessage)
     } finally {
       setLoading(false)
     }
@@ -453,8 +536,28 @@ function AuthForm() {
 
             <form className="space-y-6" onSubmit={handleAuth}>
               {error && (
-                <div className="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 px-4 py-3 rounded-lg text-sm">
-                  {error}
+                <div className="bg-rose-50 dark:bg-rose-950/50 border-2 border-rose-300 dark:border-rose-700 rounded-xl p-4 shadow-sm">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-rose-500 dark:text-rose-400 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <p className="text-sm font-medium text-rose-800 dark:text-rose-200">
+                        {error}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setError('')}
+                      className="ml-3 flex-shrink-0 text-rose-400 hover:text-rose-500 dark:text-rose-500 dark:hover:text-rose-400"
+                    >
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -513,8 +616,14 @@ function AuthForm() {
                       className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-colors ${isGoogleAuth ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-gray-800' : ''}`}
                       placeholder="Enter your email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => setEmail(e.target.value.trim().toLowerCase())}
+                      onBlur={(e) => setEmail(e.target.value.trim().toLowerCase())}
                     />
+                    {!isGoogleAuth && !isSignUp && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        💡 Tip: If you signed up with Google, use "Continue with Google" button
+                      </p>
+                    )}
                   </div>
 
                   {/* Patient Registration Fields */}
@@ -858,7 +967,6 @@ export default function AuthPage() {
       <Suspense fallback={<div>Loading...</div>}>
         <AuthForm />
       </Suspense>
-      <FirebaseDebug />
     </div>
   )
 }
